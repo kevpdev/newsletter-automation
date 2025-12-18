@@ -1,31 +1,29 @@
 # Active Context
 
-Last update: 2025-12-14
+Last update: 2025-12-18 22:53
 
 ## Current Focus
-Project initialization - setting up memory-bank structure and preparing for implementation of newsletter automation system per detailed plan.
+Gmail integration complete and tested with real data. Ready to implement AI layer (OpenRouter + Llama 3.3).
 
 ## Recent Changes
-2025-12-14: **Memory-bank initialization**: Created projectbrief.md, techContext.md, activeContext.md with project details from plan.
+[2025-12-18 22:53]: **OAuth2 scope conflict resolution**: Fixed metadata vs readonly conflict preventing Gmail API access. Created auth helper scripts (auth:generate, auth:check). Modified fetch to use labelIds instead of q parameter. Successfully tested with 11 real Java Weekly emails (src/gmail/auth.ts, src/gmail/fetch.ts, src/index.ts, scripts/generate-refresh-token.ts, scripts/check-token-scopes.ts)
+
+[2025-12-14]: **Gmail and AI layers with tests**: Implemented OAuth2 auth, email fetch/extract/send, AI prompt builder. Created 32 passing unit tests across all modules (src/gmail/*, src/ai/prompt.ts, tests/**)
+
+[2025-12-14]: **Memory-bank initialization**: Created projectbrief.md, techContext.md, activeContext.md with project details from plan
 
 ## Next Steps
-1. [ ] Phase 1: Setup pnpm + TypeScript project structure
-2. [ ] Phase 2: Define types (InputEmail, EmailMetadata, AISummary, OutputEmail) + config
-3. [ ] Phase 3: Implement Gmail API (auth, fetch, extract, send)
-4. [ ] Phase 4: Implement AI layer (prompt builder, OpenRouter client, JSON parser)
-5. [ ] Phase 5: Implement HTML renderer (domain-colored templates)
-6. [ ] Phase 6: Setup Winston logger
-7. [ ] Phase 7: Main orchestration (glue all phases together)
-8. [ ] Phase 8: GitHub Actions workflow (.github/workflows/run-batch.yml)
-9. [ ] Phase 9: Jest tests (parser.test.ts, renderer.test.ts)
-10. [ ] Phase 10: Security review (scopes, secrets, error handling)
-11. [ ] Phase 11: Documentation (README.md, .env.example)
+1. [ ] STORY-09: Implement OpenRouter API client with retry logic (meta-llama/llama-3.3-70b-instruct-free)
+2. [ ] STORY-10: Implement AI response parser with schema validation
+3. [ ] STORY-11: Implement HTML renderer with domain-specific styling
+4. [ ] STORY-12: Implement main orchestration (batch processor loop)
+5. [ ] STORY-13-14: Write tests for AI parser and HTML renderer
+6. [ ] STORY-15: Create GitHub Actions workflow
+7. [ ] STORY-16: Security review
+8. [ ] STORY-17: Documentation (README.md)
 
 ## Challenges
-- Gmail OAuth2 refresh token generation (one-time setup, needs documentation)
-- AI response reliability (JSON parsing failures - needs retry + validation)
-- OpenRouter rate limits (429 errors - needs exponential backoff)
-- Timezone handling for GitHub Actions cron (UTC vs local time)
+✅ **RESOLVED - OAuth2 scope conflict**: gmail.metadata was interfering with gmail.readonly, blocking format:full. Solution: regenerate refresh tokens WITHOUT metadata scope (only readonly, modify, send)
 
 ## Decisions Made
 - **1-to-1 flow**: Each input email → one output email (no aggregation across domains)
