@@ -16,10 +16,21 @@ export function getGmailClient(): gmail_v1.Gmail {
     process.exit(1);
   }
 
+  logger.info(`Debug - Refresh token used (first 30 chars): ${refreshToken.substring(0, 30)}...`);
+  logger.info(`Debug - Client ID (first 20 chars): ${clientId.substring(0, 20)}...`);
+
   const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, 'http://localhost');
 
   oauth2Client.setCredentials({
     refresh_token: refreshToken,
+  });
+
+  // Force token refresh to ensure we get fresh credentials with correct scopes
+  oauth2Client.on('tokens', (tokens) => {
+    logger.info('✅ New access token obtained');
+    if (tokens.scope) {
+      logger.info(`Scopes: ${tokens.scope}`);
+    }
   });
 
   const gmail = google.gmail({
