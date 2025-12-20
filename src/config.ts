@@ -57,12 +57,12 @@ export const vueConfig: DomainConfig = {
 };
 
 export const DOMAINS: DomainConfig[] = [
-  javaConfig,
-  angularConfig,
-  devopsConfig,
-  aiConfig,
-  architectureConfig,
-  securityConfig,
-  frontendConfig,
-  vueConfig,
+  //javaConfig,
+  // angularConfig,
+  // devopsConfig,
+  // aiConfig,
+  // architectureConfig,
+  // securityConfig,
+  // frontendConfig,
+   vueConfig,
 ];
