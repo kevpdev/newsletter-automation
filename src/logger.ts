@@ -27,8 +27,22 @@ const redactSensitive = winston.format((info) => {
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.printf(({ timestamp, level, message }) => {
-    return `${timestamp} [${level}]: ${message}`;
+  winston.format.printf((info) => {
+    const { timestamp, level, message, ...metadata } = info;
+
+    // Remove Winston's internal Symbol properties
+    const cleanMetadata = Object.keys(metadata)
+      .filter((key) => typeof key === 'string')
+      .reduce((acc, key) => {
+        acc[key] = metadata[key];
+        return acc;
+      }, {} as Record<string, unknown>);
+
+    const metaStr = Object.keys(cleanMetadata).length
+      ? '\n' + JSON.stringify(cleanMetadata, null, 2)
+      : '';
+
+    return `${timestamp} [${level}]: ${message}${metaStr}`;
   })
 );
 
