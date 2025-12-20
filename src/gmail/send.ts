@@ -35,20 +35,51 @@ async function getLabelId(labelName: string): Promise<string | null> {
   return targetLabel?.id || null;
 }
 
-export async function sendProcessedEmail(output: OutputEmail, originalId: string): Promise<void> {
+export async function sendProcessedEmail(output: OutputEmail, originalId: string, inputLabel: string): Promise<void> {
   const gmail = getGmailClient();
 
   const mimeMessage = createMimeMessage(output);
   const encodedMessage = encodeBase64Url(mimeMessage);
 
-  await gmail.users.messages.send({
+  const sendResponse = await gmail.users.messages.send({
     userId: 'me',
     requestBody: {
       raw: encodedMessage,
     },
   });
 
+  const sentMessageId = sendResponse.data.id;
+  if (!sentMessageId) {
+    throw new Error('Failed to get sent message ID from Gmail API');
+  }
+
   logger.info(`Sent processed email: ${output.subject}`);
+
+  // Get the output label ID (e.g., "Output/Vue")
+  const outputLabelId = await getLabelId(output.outputLabel);
+  if (!outputLabelId) {
+    throw new Error(
+      `Label "${output.outputLabel}" not found. Please create it in Gmail.`
+    );
+  }
+
+  // Apply output label to sent message
+  await gmail.users.messages.modify({
+    userId: 'me',
+    id: sentMessageId,
+    requestBody: {
+      addLabelIds: [outputLabelId],
+      removeLabelIds: ['INBOX'],
+    },
+  });
+
+  logger.info(`Applied label "${output.outputLabel}" to sent email: ${sentMessageId}`);
+
+  // Get the input label ID to remove it (e.g., "Input/Vue")
+  const inputLabelId = await getLabelId(inputLabel);
+  if (!inputLabelId) {
+    throw new Error(`Label "${inputLabel}" not found. Please create it in Gmail.`);
+  }
 
   // Get the "Processed" label ID
   const processedLabelId = await getLabelId('Processed');
@@ -61,8 +92,9 @@ export async function sendProcessedEmail(output: OutputEmail, originalId: string
     id: originalId,
     requestBody: {
       addLabelIds: [processedLabelId],
+      removeLabelIds: [inputLabelId],
     },
   });
 
-  logger.info(`Marked original email as Processed: ${originalId}`);
+  logger.info(`Moved email ${originalId} from "${inputLabel}" to "Processed"`);
 }

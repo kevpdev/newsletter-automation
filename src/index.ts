@@ -49,13 +49,13 @@ async function processEmail(
 
     const outputEmail: OutputEmail = {
       to: userEmail,
-      subject: `[${domain.label}] ${summary.title}`,
+      subject: `[AI Summary] ${metadata.subject}`,
       htmlBody,
       outputLabel: domain.outputLabel,
     };
 
     // Step 7: Send email and mark as processed
-    await sendProcessedEmail(outputEmail, emailId);
+    await sendProcessedEmail(outputEmail, emailId, domain.inputLabel);
     logger.info(`✅ Email ${emailId} processed successfully\n`);
 
     return true;
