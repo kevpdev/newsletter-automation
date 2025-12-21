@@ -1,6 +1,6 @@
 import type { ParsedMarkdown } from './types.js';
 import type { DomainConfig } from './types.js';
-import { convertMarkdownToHtml } from './markdown-converter.js';
+import { convertMarkdownToHtml, escapeTextPreservingHtmlTags } from './markdown-converter.js';
 
 /**
  * Converts hex color to rgba with specified opacity.
@@ -71,7 +71,9 @@ export function renderHTML(parsedMarkdown: ParsedMarkdown, domain: DomainConfig)
       const emoji = getEmojiForSection(section.heading, index);
       const bulletsHtml = section.bullets
         .map((bullet) => {
-          const htmlBullet = convertMarkdownToHtml(escapeHtml(bullet));
+          // Convert Markdown → HTML first, then escape text (preserving tags)
+          const htmlWithTags = convertMarkdownToHtml(bullet);
+          const htmlBullet = escapeTextPreservingHtmlTags(htmlWithTags);
           return `    <li style="margin-bottom: 12px;">${htmlBullet}</li>`;
         })
         .join('\n');

@@ -137,3 +137,60 @@ export function convertMarkdownToHtml(text: string): string {
   html = convertLinksToHtml(html);
   return html;
 }
+
+/**
+ * Escapes HTML special characters to prevent XSS.
+ * @param text - Text to escape
+ * @returns Escaped HTML-safe string
+ */
+function escapeHtml(text: string): string {
+  const htmlEscapes: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+
+  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
+}
+
+/**
+ * Escapes HTML in text while preserving HTML tags.
+ * Converts Markdown to HTML first, then escapes only the text content (not the generated tags).
+ *
+ * Use this to safely render user-generated Markdown without XSS vulnerabilities
+ * while keeping <a> and <strong> tags functional.
+ *
+ * @param html - HTML string with tags (from convertMarkdownToHtml)
+ * @returns HTML with text escaped but tags preserved
+ *
+ * @example
+ * const html = convertMarkdownToHtml("**Java** <script>alert('xss')</script>");
+ * escapeTextPreservingHtmlTags(html);
+ * // "<strong>Java</strong> &lt;script&gt;alert('xss')&lt;/script&gt;"
+ */
+export function escapeTextPreservingHtmlTags(html: string): string {
+  const parts: string[] = [];
+  let lastIndex = 0;
+  const tagRegex = /<\/?[a-z][^>]*>/gi;
+
+  let match;
+  while ((match = tagRegex.exec(html)) !== null) {
+    // Escape text before tag
+    if (match.index > lastIndex) {
+      const text = html.substring(lastIndex, match.index);
+      parts.push(escapeHtml(text));
+    }
+    // Keep tag as-is
+    parts.push(match[0]);
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Escape remaining text after last tag
+  if (lastIndex < html.length) {
+    parts.push(escapeHtml(html.substring(lastIndex)));
+  }
+
+  return parts.join('');
+}
