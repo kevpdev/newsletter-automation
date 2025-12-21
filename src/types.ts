@@ -1,23 +1,17 @@
-export interface InputEmail {
-  id: string;
-  labelName: string;
-  rawContent: unknown;
+/** Markdown section with heading and bullets */
+export interface MarkdownSection {
+  heading: string;
+  bullets: string[];
 }
 
-export interface EmailMetadata {
-  sender: string;
-  subject: string;
-  htmlContent: string;
-  domain: string;
+/** Parsed Markdown structure from Perplexity response */
+export interface ParsedMarkdown {
+  title?: string;
+  sections: MarkdownSection[];
+  citations?: string[];
 }
 
-export interface AISummary {
-  title: string;
-  impact: string;
-  keyPoints: string[];
-  action: string;
-}
-
+/** Email to send to Gmail Output/* labels */
 export interface OutputEmail {
   to: string;
   subject: string;
@@ -25,9 +19,9 @@ export interface OutputEmail {
   outputLabel: string;
 }
 
+/** Domain configuration (color, labels) */
 export interface DomainConfig {
   label: string;
   color: string;
-  inputLabel: string;
   outputLabel: string;
 }

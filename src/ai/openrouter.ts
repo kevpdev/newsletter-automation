@@ -3,6 +3,7 @@ import logger from '../logger.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
+const PERPLEXITY_MODEL = 'perplexity/sonar';
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
@@ -66,7 +67,7 @@ async function sleep(ms: number): Promise<void> {
 }
 
 /**
- * Calls OpenRouter API with Llama 3.3 model and exponential backoff retry.
+ * Calls OpenRouter API with specified model and exponential backoff retry.
  *
  * Features:
  * - Exponential backoff (1s → 2s → 4s) for 429 rate limit errors
@@ -75,15 +76,22 @@ async function sleep(ms: number): Promise<void> {
  * - Metadata-only logging (no full responses logged)
  *
  * @param prompt - Full prompt including system instructions and user content
- * @returns Raw API response text (JSON string to be parsed)
+ * @param model - OpenRouter model ID (default: Llama 3.3)
+ * @returns Raw API response text (Markdown for Perplexity, JSON for Llama)
  * @throws Error if API key missing, all retries exhausted, or response malformed
  *
  * @example
+ * // Llama 3.3 (JSON response)
  * const prompt = buildPrompt(metadata);
  * const jsonResponse = await summarizeWithAI(prompt);
- * const summary = JSON.parse(jsonResponse);
+ *
+ * // Perplexity Sonar (Markdown response)
+ * const markdown = await summarizeWithAI(searchQuery, PERPLEXITY_MODEL);
  */
-export async function summarizeWithAI(prompt: string): Promise<string> {
+export async function summarizeWithAI(
+  prompt: string,
+  model: string = MODEL
+): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error('OPENROUTER_API_KEY environment variable is not set');
@@ -91,7 +99,7 @@ export async function summarizeWithAI(prompt: string): Promise<string> {
 
   // Format request for OpenRouter API
   const requestBody: OpenRouterRequest = {
-    model: MODEL,
+    model,
     messages: [{ role: 'user', content: prompt }],
   };
 
@@ -102,7 +110,7 @@ export async function summarizeWithAI(prompt: string): Promise<string> {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       logger.info(
-        `OpenRouter API call attempt ${attempt + 1}/${MAX_RETRIES} (model: ${MODEL})`
+        `OpenRouter API call attempt ${attempt + 1}/${MAX_RETRIES} (model: ${model})`
       );
 
       // POST request to OpenRouter with auth headers and timeout
@@ -193,4 +201,21 @@ export async function summarizeWithAI(prompt: string): Promise<string> {
   }
 
   throw lastError || new Error('OpenRouter API call failed after all retries');
+}
+
+/**
+ * Searches with Perplexity Sonar model via OpenRouter.
+ * Returns Markdown response with real-time web search results.
+ *
+ * @param query - Search query/prompt (e.g., Java tech news last 30 days)
+ * @returns Markdown response with ## headings, bullets, and [links](url)
+ * @throws Error if API key missing or request fails
+ *
+ * @example
+ * const javaPrompt = DOMAIN_PROMPTS['java'];
+ * const markdown = await searchWithPerplexity(javaPrompt);
+ * const parsed = parseMarkdownToStructure(markdown);
+ */
+export async function searchWithPerplexity(query: string): Promise<string> {
+  return summarizeWithAI(query, PERPLEXITY_MODEL);
 }

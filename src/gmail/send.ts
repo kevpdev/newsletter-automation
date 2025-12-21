@@ -24,7 +24,7 @@ function encodeBase64Url(text: string): string {
 
 /**
  * Get label ID from label name.
- * @param labelName - Name of the label (e.g., "Processed")
+ * @param labelName - Name of the label (e.g., "Output/Java")
  * @returns Label ID or null if not found
  */
 async function getLabelId(labelName: string): Promise<string | null> {
@@ -35,7 +35,22 @@ async function getLabelId(labelName: string): Promise<string | null> {
   return targetLabel?.id || null;
 }
 
-export async function sendProcessedEmail(output: OutputEmail, originalId: string, inputLabel: string): Promise<void> {
+/**
+ * Sends tech watch email to user and applies output label.
+ * Simplified for proactive tech watch (no input emails to process).
+ *
+ * @param output - Email to send with subject, body, and output label
+ * @throws Error if label not found or send fails
+ *
+ * @example
+ * await sendEmail({
+ *   to: 'user@example.com',
+ *   subject: '[Java] Tech Watch - Week 12',
+ *   htmlBody: '<html>...',
+ *   outputLabel: 'Output/Java'
+ * });
+ */
+export async function sendEmail(output: OutputEmail): Promise<void> {
   const gmail = getGmailClient();
 
   const mimeMessage = createMimeMessage(output);
@@ -53,9 +68,9 @@ export async function sendProcessedEmail(output: OutputEmail, originalId: string
     throw new Error('Failed to get sent message ID from Gmail API');
   }
 
-  logger.info(`Sent processed email: ${output.subject}`);
+  logger.info(`Sent tech watch email: ${output.subject}`);
 
-  // Get the output label ID (e.g., "Output/Vue")
+  // Get the output label ID (e.g., "Output/Java")
   const outputLabelId = await getLabelId(output.outputLabel);
   if (!outputLabelId) {
     throw new Error(
@@ -74,27 +89,4 @@ export async function sendProcessedEmail(output: OutputEmail, originalId: string
   });
 
   logger.info(`Applied label "${output.outputLabel}" to sent email: ${sentMessageId}`);
-
-  // Get the input label ID to remove it (e.g., "Input/Vue")
-  const inputLabelId = await getLabelId(inputLabel);
-  if (!inputLabelId) {
-    throw new Error(`Label "${inputLabel}" not found. Please create it in Gmail.`);
-  }
-
-  // Get the "Processed" label ID
-  const processedLabelId = await getLabelId('Processed');
-  if (!processedLabelId) {
-    throw new Error('Label "Processed" not found. Please create it in Gmail.');
-  }
-
-  await gmail.users.messages.modify({
-    userId: 'me',
-    id: originalId,
-    requestBody: {
-      addLabelIds: [processedLabelId],
-      removeLabelIds: [inputLabelId],
-    },
-  });
-
-  logger.info(`Moved email ${originalId} from "${inputLabel}" to "Processed"`);
 }
