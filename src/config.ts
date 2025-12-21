@@ -2,13 +2,14 @@ import { DomainConfig } from './types.js';
 
 /**
  * Java domain configuration (MVP)
- * Proactive tech watch via Perplexity Sonar searches
+ * Proactive tech watch via Feedly Collections + Claude Haiku scoring
  */
 export const DOMAINS: DomainConfig[] = [
   {
     label: 'Java',
     color: '#FF6B6B',
     outputLabel: 'Output/Java',
+    feedlyCollectionId: process.env.FEEDLY_JAVA_COLLECTION_ID || '',
   },
 ];
 

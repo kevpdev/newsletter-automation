@@ -1,15 +1,6 @@
-/** Markdown section with heading and bullets */
-export interface MarkdownSection {
-  heading: string;
-  bullets: string[];
-}
-
-/** Parsed Markdown structure from Perplexity response */
-export interface ParsedMarkdown {
-  title?: string;
-  sections: MarkdownSection[];
-  citations?: string[];
-}
+export type { Article, FeedlyArticle, FeedlyResponse } from './feedly/types.js';
+export type { ScoredArticle } from './ai/scoring.js';
+export type { Digest } from './aggregator.js';
 
 /** Email to send to Gmail Output/* labels */
 export interface OutputEmail {
@@ -19,9 +10,10 @@ export interface OutputEmail {
   outputLabel: string;
 }
 
-/** Domain configuration (color, labels) */
+/** Domain configuration (color, labels, Feedly collection) */
 export interface DomainConfig {
   label: string;
   color: string;
   outputLabel: string;
+  feedlyCollectionId: string;
 }

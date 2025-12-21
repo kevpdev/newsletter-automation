@@ -2,8 +2,6 @@ import axios, { AxiosError } from 'axios';
 import logger from '../logger.js';
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'meta-llama/llama-3.3-70b-instruct:free';
-const PERPLEXITY_MODEL = 'perplexity/sonar';
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
 
@@ -90,7 +88,7 @@ async function sleep(ms: number): Promise<void> {
  */
 export async function summarizeWithAI(
   prompt: string,
-  model: string = MODEL
+  model: string
 ): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
@@ -143,6 +141,7 @@ export async function summarizeWithAI(
         completion_tokens: response.data.usage?.completion_tokens,
         total_tokens: response.data.usage?.total_tokens,
         attempt: attempt + 1,
+        content: content
       });
 
       return content;
@@ -201,21 +200,4 @@ export async function summarizeWithAI(
   }
 
   throw lastError || new Error('OpenRouter API call failed after all retries');
-}
-
-/**
- * Searches with Perplexity Sonar model via OpenRouter.
- * Returns Markdown response with real-time web search results.
- *
- * @param query - Search query/prompt (e.g., Java tech news last 30 days)
- * @returns Markdown response with ## headings, bullets, and [links](url)
- * @throws Error if API key missing or request fails
- *
- * @example
- * const javaPrompt = DOMAIN_PROMPTS['java'];
- * const markdown = await searchWithPerplexity(javaPrompt);
- * const parsed = parseMarkdownToStructure(markdown);
- */
-export async function searchWithPerplexity(query: string): Promise<string> {
-  return summarizeWithAI(query, PERPLEXITY_MODEL);
 }

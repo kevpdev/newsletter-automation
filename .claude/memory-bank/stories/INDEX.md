@@ -1,173 +1,194 @@
 # Newsletter Automation - Stories Index
 
-**Parent Plan**: `.claude/inputs/Plan détaillé newsletter automatisée (Node js + Ty 2c7fe971789a801282bee743ae7c3635.md`
+**Migration**: Perplexity → Feedly + Claude Haiku (✅ Completed)
+**Parent Plan**: `.claude/inputs/plans/claude_code_plan_v2_feedly.md`
 
-**Total Stories**: 14
-**Estimated Effort**: ~18-20 hours
-
----
-
-## Story List (by Category)
-
-### Foundation
-- **SETUP-001**: Project initialization with pnpm + TypeScript - [pending] - 1h
-- **TYPES-001**: Core types and domain configuration - [pending] - 1h
-
-### Gmail Integration
-- **GMAIL-001**: OAuth2 authentication with GCP - [pending] - 1h
-- **GMAIL-002**: Fetch emails from Input/* labels - [pending] - 2h
-- **GMAIL-003**: Extract and clean email metadata - [pending] - 1.5h
-- **GMAIL-004**: Send to Output/* and mark as Processed - [pending] - 2h
-
-### AI Integration
-- **AI-001**: Prompt builder for structured JSON responses - [pending] - 1h
-- **AI-002**: OpenRouter API client with retry logic - [pending] - 2h
-- **AI-003**: Parse and validate AI responses - [pending] - 1.5h
-
-### Rendering & Utilities
-- **RENDER-001**: ADHD-friendly HTML email renderer - [pending] - 2h
-- **LOG-001**: Winston logger configuration - [pending] - 1h
-
-### Orchestration
-- **MAIN-001**: Main batch processor orchestration - [pending] - 2h
-
-### CI/CD & Quality
-- **CI-001**: GitHub Actions workflow setup - [pending] - 1h
-- **TEST-001**: Vitest tests for parser and renderer - [pending] - 2h
+**Total Stories**: 13 active + 7 archived
+**Effort**: ~6.5 hours actual
 
 ---
 
-## Dependency Graph
+## Active Stories (Phase-Based)
+
+### Migration Phases (Feedly System)
+- **PHASE-1**: Types & Configuration - ✅ Completed - 30 min
+- **PHASE-2**: Feedly API Client - ✅ Completed - 1h
+- **PHASE-3**: AI Article Scoring - ✅ Completed - 2h
+- **PHASE-4**: Score-Based Aggregation - ✅ Completed - 30 min
+- **PHASE-5**: HTML Digest Renderer - ✅ Completed - 1h30
+- **PHASE-6**: Main Orchestration - ✅ Completed - 1h
+- **PHASE-7**: Cleanup & Migration - ✅ Completed - 30 min
+
+### Foundation (Still Valid)
+- **SETUP-001**: Project initialization with pnpm + TypeScript - ✅ Completed - 1h
+- **TYPES-001**: Core types and domain configuration - ✅ Completed - 1h (updated in PHASE-1)
+
+### Gmail Integration (Still Valid)
+- **GMAIL-001**: OAuth2 authentication with GCP - ✅ Completed - 1h
+- **GMAIL-004**: Send to Output/* and mark as Processed - ✅ Completed - 2h
+
+### AI Integration (Still Valid)
+- **AI-002**: OpenRouter API client with retry logic - ✅ Completed - 2h (updated in PHASE-3)
+
+### Utilities (Still Valid)
+- **LOG-001**: Winston logger configuration - ✅ Completed - 1h
+
+### CI/CD (Pending)
+- **CI-001**: GitHub Actions workflow setup - ⏳ Pending - 1h
+  - TODO: Add `FEEDLY_API_TOKEN` secret
+  - TODO: Add `FEEDLY_JAVA_COLLECTION_ID` secret
+
+---
+
+## Archived Stories (Perplexity System)
+
+**Location**: `.claude/memory-bank/stories/archived/`
+
+### Obsolete (Replaced by Feedly)
+- **GMAIL-002**: Fetch emails from Input/* labels (replaced by Feedly fetch)
+- **GMAIL-003**: Extract and clean email metadata (replaced by Feedly normalization)
+- **AI-001**: Prompt builder for structured JSON (replaced by scoring prompts)
+- **AI-003**: Parse and validate AI responses (replaced by scoring validation)
+- **RENDER-001**: ADHD-friendly HTML email renderer (replaced by digest renderer)
+- **MAIN-001**: Main batch processor orchestration (replaced by PHASE-6)
+- **TEST-001**: Vitest tests for parser and renderer (replaced by new tests)
+
+---
+
+## Migration Architecture
+
+### Old System (Perplexity)
+```
+Gmail Input/* → Extract metadata → Perplexity search
+  → Parse Markdown → Render HTML → Gmail Output/*
+```
+
+### New System (Feedly + Claude Haiku)
+```
+Feedly Collections (20 articles) → Claude Haiku scoring (1-10)
+  → Aggregate by score (Critical/Important/Bonus) → Digest HTML
+  → Gmail Output/*
+```
+
+---
+
+## Implementation Summary
+
+### Code Changes
+- **Created**: 7 new files (Feedly client, scoring, aggregator, tests)
+- **Modified**: 6 files (types, config, renderer, index, openrouter, .env)
+- **Deleted**: 6 obsolete files (227 lines removed)
+
+### Test Coverage
+- **Total tests**: 50/50 passing
+- **New tests**: 50 (Feedly: 6, Scoring: 10, Aggregator: 8, Renderer: 26)
+- **Deleted tests**: 4 obsolete test files
+
+### Build Status
+- ✅ TypeScript compilation: 0 errors
+- ✅ All tests passing: 50/50
+- ✅ No orphaned imports
+
+---
+
+## Phase Dependencies
 
 ```
-SETUP-001 (Foundation - no dependencies)
+PHASE-1 (Types & Config)
   │
-  ├─> TYPES-001 (Types & Config)
+  ├─> PHASE-2 (Feedly Client)
   │    │
-  │    ├─> GMAIL-001 (Auth)
-  │    │    │
-  │    │    ├─> GMAIL-002 (Fetch)
-  │    │    │    │
-  │    │    │    └─> GMAIL-003 (Extract)
-  │    │    │
-  │    │    └─> GMAIL-004 (Send + Mark)
-  │    │
-  │    ├─> AI-001 (Prompt Builder)
-  │    │    │
-  │    │    └─> AI-002 (OpenRouter Client)
-  │    │         │
-  │    │         └─> AI-003 (Parser + Validator)
-  │    │
-  │    ├─> RENDER-001 (HTML Renderer)
-  │    │
-  │    └─> LOG-001 (Logger)
-  │
-  └─> MAIN-001 (Orchestration - depends on all above)
-       │
-       ├─> CI-001 (GitHub Actions - parallel)
-       │
-       └─> TEST-001 (Tests - parallel)
+  │    └─> PHASE-3 (AI Scoring)
+  │         │
+  │         └─> PHASE-4 (Aggregation)
+  │              │
+  │              └─> PHASE-5 (Renderer)
+  │                   │
+  │                   └─> PHASE-6 (Orchestration)
+  │                        │
+  │                        └─> PHASE-7 (Cleanup)
 ```
 
 ---
 
-## Implementation Order (Suggested)
+## Quick Reference
 
-### Phase 1: Foundation (Sequential)
-1. **SETUP-001** - Project initialization
-2. **TYPES-001** - Core types and config
-
-### Phase 2: Parallel Streams (After Phase 1)
-**Stream A - Gmail**:
-3. **GMAIL-001** - Auth (1h)
-4. **GMAIL-002** - Fetch (2h)
-5. **GMAIL-003** - Extract (1.5h)
-6. **GMAIL-004** - Send/Mark (2h)
-
-**Stream B - AI** (parallel with Stream A):
-3. **AI-001** - Prompt (1h)
-4. **AI-002** - OpenRouter (2h)
-5. **AI-003** - Parser (1.5h)
-
-**Stream C - Utilities** (parallel with A & B):
-3. **RENDER-001** - HTML Renderer (2h)
-4. **LOG-001** - Logger (1h)
-
-### Phase 3: Integration (After Phase 2)
-7. **MAIN-001** - Main orchestration (2h)
-
-### Phase 4: Quality & Deployment (Parallel after Phase 3)
-8. **CI-001** - GitHub Actions (1h)
-9. **TEST-001** - Vitest tests (2h)
-
----
-
-## Critical Path
-
-**Longest dependency chain** (determines minimum project duration):
-```
-SETUP-001 (1h)
-  → TYPES-001 (1h)
-    → GMAIL-001 (1h)
-      → GMAIL-002 (2h)
-        → GMAIL-003 (1.5h)
-          → MAIN-001 (2h)
-            → CI-001 or TEST-001 (2h)
-```
-
-**Total Critical Path**: ~10.5-11.5 hours (minimum with no parallelization)
-
-**With Parallelization**: ~12-14 hours (3 parallel streams in Phase 2)
-
----
-
-## Quick Start
-
-To start implementation:
-
+### Start Implementation
 ```bash
-# Start with foundation
-/session-start "Implement SETUP-001"
+# Review phase specs
+cat .claude/memory-bank/stories/PHASE-1-types-config.md
 
-# After SETUP-001 completion
-/session-start "Implement TYPES-001"
+# Build and test
+pnpm run build
+pnpm test
 
-# After TYPES-001, parallelize or sequential
-/session-start "Implement GMAIL-001"
-/session-start "Implement AI-001"
-/session-start "Implement RENDER-001 and LOG-001"
+# Run locally
+pnpm start
 ```
+
+### Phase Content Overview
+
+| Phase | Focus | Files Created | Tests | Lines |
+|-------|-------|---------------|-------|-------|
+| PHASE-1 | Types & Config | `feedly/types.ts` | 0 | ~40 |
+| PHASE-2 | Feedly Client | `feedly/client.ts` | 6 | 118 |
+| PHASE-3 | AI Scoring | `ai/scoring.ts`, `ai/scoring-prompts.ts` | 10 | ~133 |
+| PHASE-4 | Aggregation | `aggregator.ts` | 8 | 28 |
+| PHASE-5 | Renderer | `renderer.ts` (rewrite) | 26 | 135 |
+| PHASE-6 | Orchestration | `index.ts` (rewrite) | 0 | 80 |
+| PHASE-7 | Cleanup | (deletions) | 0 | -227 |
+
+---
+
+## Next Steps
+
+1. **CI/CD Update** (PHASE-8 equivalent):
+   - Update `.github/workflows/run-batch.yml`
+   - Add Feedly secrets to GitHub
+   - Test workflow with manual trigger
+
+2. **Multi-Domain Expansion**:
+   - Add Vue collection (`FEEDLY_VUE_COLLECTION_ID`)
+   - Add Angular collection (`FEEDLY_ANGULAR_COLLECTION_ID`)
+   - Update orchestration to loop over domains
+
+3. **Production Deployment**:
+   - Weekly cron: Mondays 08:00 UTC
+   - Monitor logs for scoring failures
+   - Adjust scoring criteria based on feedback
 
 ---
 
 ## Story Status Legend
 
-- **pending**: Not started
-- **in_progress**: Currently being implemented
-- **completed**: Fully implemented and tested
-- **blocked**: Waiting on dependencies
+- ✅ **Completed**: Fully implemented and tested
+- ⏳ **Pending**: Not started
+- 🔄 **In Progress**: Currently being implemented
+- 📦 **Archived**: Obsolete, moved to `archived/`
 
 ---
 
 ## Notes
 
-1. **No code examples in stories** - Stories are reference frames, not full specs (token optimization)
-2. **BMAD principle** - Each story is self-contained with complete context
-3. **Update as you go** - Check off acceptance criteria, add technical notes discovered during implementation
-4. **1-to-1 processing** - Each input email → one output email (no aggregation)
-5. **Security first** - No secrets in logs, validate all AI responses as untrusted input
-6. **ADHD-friendly output** - Emoji markers, visual hierarchy, color cues in HTML
+1. **Phase-based naming**: Stories named by implementation phases for traceability
+2. **Granular specs**: More detailed than migration plan (includes code snippets, test counts)
+3. **BMAD principle**: Each story is self-contained with complete context
+4. **Security-first**: All AI responses validated, XSS protection in renderer
+5. **ADHD-friendly**: Emoji markers, color coding, score badges in output
+6. **Token-optimized**: No full code examples in stories (reference actual files)
 
 ---
 
 ## Related Documentation
 
-- **Parent Plan**: `.claude/inputs/Plan détaillé newsletter automatisée (Node js + Ty 2c7fe971789a801282bee743ae7c3635.md`
+- **Migration Plan**: `.claude/inputs/plans/claude_code_plan_v2_feedly.md`
+- **Original Plan**: `.claude/inputs/Plan détaillé newsletter automatisée...md` (archived)
 - **Project Brief**: `.claude/memory-bank/projectbrief.md`
 - **Tech Context**: `.claude/memory-bank/techContext.md`
 - **Active Context**: `.claude/memory-bank/activeContext.md`
 
 ---
 
-**Last Updated**: 2025-12-14
-**Created by**: /plan-to-stories command
+**Last Updated**: 2025-12-21
+**Migration Status**: ✅ Completed (Phases 1-7)
+**Created by**: Feedly migration session
