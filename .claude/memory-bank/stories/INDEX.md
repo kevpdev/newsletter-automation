@@ -1,194 +1,157 @@
 # Newsletter Automation - Stories Index
 
-**Migration**: Perplexity → Feedly + Claude Haiku (✅ Completed)
-**Parent Plan**: `.claude/inputs/plans/claude_code_plan_v2_feedly.md`
-
-**Total Stories**: 13 active + 7 archived
-**Effort**: ~6.5 hours actual
+**System**: FreshRSS + Claude Haiku (self-hosted RSS → AI scoring → Email digest)
+**Status**: Migration from Feedly to FreshRSS in progress
+**Parent Plan**: `.claude/plans/dreamy-questing-flame.md`
 
 ---
 
-## Active Stories (Phase-Based)
+## Story Map (Numbered by Execution Order)
 
-### Migration Phases (Feedly System)
-- **PHASE-1**: Types & Configuration - ✅ Completed - 30 min
-- **PHASE-2**: Feedly API Client - ✅ Completed - 1h
-- **PHASE-3**: AI Article Scoring - ✅ Completed - 2h
-- **PHASE-4**: Score-Based Aggregation - ✅ Completed - 30 min
-- **PHASE-5**: HTML Digest Renderer - ✅ Completed - 1h30
-- **PHASE-6**: Main Orchestration - ✅ Completed - 1h
-- **PHASE-7**: Cleanup & Migration - ✅ Completed - 30 min
+### Foundation (1xx - Setup & Config)
+- **01-PROJECT-SETUP**: Initial project structure (pnpm, TypeScript, strict mode)
+  *Status*: ✅ Completed | *Effort*: 1h
 
-### Foundation (Still Valid)
-- **SETUP-001**: Project initialization with pnpm + TypeScript - ✅ Completed - 1h
-- **TYPES-001**: Core types and domain configuration - ✅ Completed - 1h (updated in PHASE-1)
+- **02-FRESHRSS-PREP**: FreshRSS API setup (OAuth, token, categories)
+  *Status*: ⏳ Pending (manual) | *Effort*: 30 min
 
-### Gmail Integration (Still Valid)
-- **GMAIL-001**: OAuth2 authentication with GCP - ✅ Completed - 1h
-- **GMAIL-004**: Send to Output/* and mark as Processed - ✅ Completed - 2h
+- **03-CORE-TYPES**: Types and domain configuration (TypeScript interfaces)
+  *Status*: 🔄 Update needed | *Files*: `src/types.ts`, `src/config.ts`
 
-### AI Integration (Still Valid)
-- **AI-002**: OpenRouter API client with retry logic - ✅ Completed - 2h (updated in PHASE-3)
+### Data Collection (2xx - FreshRSS Integration)
+- **21-FRESHRSS-CLIENT**: FreshRSS API client (replace Feedly)
+  *Status*: ⏳ Pending | *Files*: Create `src/freshrss/client.ts`, `src/freshrss/types.ts`
 
-### Utilities (Still Valid)
-- **LOG-001**: Winston logger configuration - ✅ Completed - 1h
+### AI Processing (3xx - Scoring & Analysis)
+- **31-AI-SCORING**: Claude Haiku scoring (1-10 relevance per article)
+  *Status*: ✅ Ready (no changes needed) | *Files*: `src/ai/scoring.ts`, `src/ai/openrouter.ts`
 
-### CI/CD (Pending)
-- **CI-001**: GitHub Actions workflow setup - ⏳ Pending - 1h
-  - TODO: Add `FEEDLY_API_TOKEN` secret
-  - TODO: Add `FEEDLY_JAVA_COLLECTION_ID` secret
+### Output Generation (4xx - Aggregation & Rendering)
+- **41-AGGREGATION**: Score-based grouping (Critical/Important/Bonus) + TDAH limit (5 articles)
+  *Status*: 🔄 Update needed | *Files*: `src/aggregator.ts`
 
----
+- **42-HTML-DIGEST**: Digest HTML renderer (inline CSS, responsive)
+  *Status*: ✅ Ready (no changes) | *Files*: `src/renderer.ts`
 
-## Archived Stories (Perplexity System)
+### Execution (5xx - Orchestration & Deployment)
+- **51-MAIN-ORCHESTRATION**: Main flow (fetch → score → aggregate → render → send)
+  *Status*: 🔄 Update needed | *Files*: `src/index.ts`
 
-**Location**: `.claude/memory-bank/stories/archived/`
+- **52-EMAIL-SEND**: Gmail OAuth2 + send with labels
+  *Status*: ✅ Ready | *Files*: `src/gmail/auth.ts`, `src/gmail/send.ts`
 
-### Obsolete (Replaced by Feedly)
-- **GMAIL-002**: Fetch emails from Input/* labels (replaced by Feedly fetch)
-- **GMAIL-003**: Extract and clean email metadata (replaced by Feedly normalization)
-- **AI-001**: Prompt builder for structured JSON (replaced by scoring prompts)
-- **AI-003**: Parse and validate AI responses (replaced by scoring validation)
-- **RENDER-001**: ADHD-friendly HTML email renderer (replaced by digest renderer)
-- **MAIN-001**: Main batch processor orchestration (replaced by PHASE-6)
-- **TEST-001**: Vitest tests for parser and renderer (replaced by new tests)
+- **53-LOGGING**: Winston logger setup (console + file)
+  *Status*: ✅ Ready | *Files*: `src/logger.ts`
 
----
+- **54-ENV-CONFIG**: Environment variables (.env, .env.example)
+  *Status*: 🔄 Update needed | *Files*: `.env.example`, update secrets
 
-## Migration Architecture
+### CI/CD (6xx - Automation)
+- **61-GITHUB-ACTIONS**: GitHub Actions workflow + secrets
+  *Status*: ⏳ Pending | *Files*: `.github/workflows/run-batch.yml`
 
-### Old System (Perplexity)
-```
-Gmail Input/* → Extract metadata → Perplexity search
-  → Parse Markdown → Render HTML → Gmail Output/*
-```
+### Cleanup & Docs (7xx - Final)
+- **71-DELETE-FEEDLY**: Remove Feedly integration
+  *Status*: ⏳ Pending | *Files*: Delete `src/feedly/` directory
 
-### New System (Feedly + Claude Haiku)
-```
-Feedly Collections (20 articles) → Claude Haiku scoring (1-10)
-  → Aggregate by score (Critical/Important/Bonus) → Digest HTML
-  → Gmail Output/*
-```
+- **72-UPDATE-DOCS**: Update README.md + project docs
+  *Status*: ⏳ Pending | *Files*: `README.md`, `.claude/memory-bank/projectbrief.md`
 
 ---
 
-## Implementation Summary
+## Implementation Order
 
-### Code Changes
-- **Created**: 7 new files (Feedly client, scoring, aggregator, tests)
-- **Modified**: 6 files (types, config, renderer, index, openrouter, .env)
-- **Deleted**: 6 obsolete files (227 lines removed)
-
-### Test Coverage
-- **Total tests**: 50/50 passing
-- **New tests**: 50 (Feedly: 6, Scoring: 10, Aggregator: 8, Renderer: 26)
-- **Deleted tests**: 4 obsolete test files
-
-### Build Status
-- ✅ TypeScript compilation: 0 errors
-- ✅ All tests passing: 50/50
-- ✅ No orphaned imports
-
----
-
-## Phase Dependencies
-
+### Phase 0: Manual Setup (FreshRSS Server)
 ```
-PHASE-1 (Types & Config)
-  │
-  ├─> PHASE-2 (Feedly Client)
-  │    │
-  │    └─> PHASE-3 (AI Scoring)
-  │         │
-  │         └─> PHASE-4 (Aggregation)
-  │              │
-  │              └─> PHASE-5 (Renderer)
-  │                   │
-  │                   └─> PHASE-6 (Orchestration)
-  │                        │
-  │                        └─> PHASE-7 (Cleanup)
+[ ] 02-FRESHRSS-PREP
+    ├─ Enable API in FreshRSS settings
+    ├─ Generate API token
+    ├─ Create categories (Java, Vue, Angular, etc.)
+    └─ Get category stream IDs
+```
+
+### Phase 1: TypeScript Implementation
+```
+[ ] 03-CORE-TYPES       → src/types.ts, src/config.ts
+[ ] 21-FRESHRSS-CLIENT  → src/freshrss/client.ts, types.ts
+[ ] 41-AGGREGATION      → Modify src/aggregator.ts (add 5-article limit)
+[ ] 51-MAIN-ORCHESTRATION → Update src/index.ts (import FreshRSS client)
+[ ] 54-ENV-CONFIG       → Update .env.example
+```
+
+### Phase 2: Deployment
+```
+[ ] 71-DELETE-FEEDLY    → Remove src/feedly/ directory
+[ ] 54-ENV-CONFIG       → GitHub Secrets (FRESHRSS_BASE_URL, token)
+[ ] 61-GITHUB-ACTIONS   → Create workflow
+[ ] 72-UPDATE-DOCS      → README.md, project brief
 ```
 
 ---
 
-## Quick Reference
+## File Dependencies
 
-### Start Implementation
+```
+src/types.ts (03-CORE-TYPES)
+  ↓
+src/config.ts (03-CORE-TYPES) + src/freshrss/client.ts (21-FRESHRSS-CLIENT)
+  ↓
+src/index.ts (51-MAIN-ORCHESTRATION)
+  ├─ src/ai/scoring.ts (31-AI-SCORING) [no changes]
+  ├─ src/aggregator.ts (41-AGGREGATION) [update]
+  ├─ src/renderer.ts (42-HTML-DIGEST) [no changes]
+  ├─ src/gmail/ (52-EMAIL-SEND) [no changes]
+  └─ src/logger.ts (53-LOGGING) [no changes]
+```
+
+---
+
+## Status Summary
+
+| Category | Count | Status |
+|----------|-------|--------|
+| **Ready** | 6 stories | ✅ (no changes needed) |
+| **Updates** | 4 stories | 🔄 (small modifications) |
+| **New** | 2 stories | ⏳ (FreshRSS integration) |
+| **Manual** | 1 story | ⏳ (server setup) |
+| **Cleanup** | 2 stories | ⏳ (final phase) |
+| **Total** | **15 stories** | |
+
+**Estimated Time**: 1-2 hours development (plus manual server setup)
+
+---
+
+## Quick Start
+
 ```bash
-# Review phase specs
-cat .claude/memory-bank/stories/PHASE-1-types-config.md
+# 1. Review FreshRSS prep (02)
+cat .claude/memory-bank/stories/02-FRESHRSS-PREP.md
 
-# Build and test
+# 2. Review config/types (03)
+cat .claude/memory-bank/stories/03-CORE-TYPES.md
+
+# 3. Review FreshRSS client (21)
+cat .claude/memory-bank/stories/21-FRESHRSS-CLIENT.md
+
+# 4. Build & test
 pnpm run build
 pnpm test
 
-# Run locally
+# 5. Test locally
 pnpm start
 ```
 
-### Phase Content Overview
+---
 
-| Phase | Focus | Files Created | Tests | Lines |
-|-------|-------|---------------|-------|-------|
-| PHASE-1 | Types & Config | `feedly/types.ts` | 0 | ~40 |
-| PHASE-2 | Feedly Client | `feedly/client.ts` | 6 | 118 |
-| PHASE-3 | AI Scoring | `ai/scoring.ts`, `ai/scoring-prompts.ts` | 10 | ~133 |
-| PHASE-4 | Aggregation | `aggregator.ts` | 8 | 28 |
-| PHASE-5 | Renderer | `renderer.ts` (rewrite) | 26 | 135 |
-| PHASE-6 | Orchestration | `index.ts` (rewrite) | 0 | 80 |
-| PHASE-7 | Cleanup | (deletions) | 0 | -227 |
+## Legend
+
+- ✅ **Ready**: No changes needed
+- 🔄 **Update**: Small modifications required
+- ⏳ **Pending**: Not yet implemented
+- 📦 **Archived**: Old implementation (in `/archived/` directory)
 
 ---
 
-## Next Steps
-
-1. **CI/CD Update** (PHASE-8 equivalent):
-   - Update `.github/workflows/run-batch.yml`
-   - Add Feedly secrets to GitHub
-   - Test workflow with manual trigger
-
-2. **Multi-Domain Expansion**:
-   - Add Vue collection (`FEEDLY_VUE_COLLECTION_ID`)
-   - Add Angular collection (`FEEDLY_ANGULAR_COLLECTION_ID`)
-   - Update orchestration to loop over domains
-
-3. **Production Deployment**:
-   - Weekly cron: Mondays 08:00 UTC
-   - Monitor logs for scoring failures
-   - Adjust scoring criteria based on feedback
-
----
-
-## Story Status Legend
-
-- ✅ **Completed**: Fully implemented and tested
-- ⏳ **Pending**: Not started
-- 🔄 **In Progress**: Currently being implemented
-- 📦 **Archived**: Obsolete, moved to `archived/`
-
----
-
-## Notes
-
-1. **Phase-based naming**: Stories named by implementation phases for traceability
-2. **Granular specs**: More detailed than migration plan (includes code snippets, test counts)
-3. **BMAD principle**: Each story is self-contained with complete context
-4. **Security-first**: All AI responses validated, XSS protection in renderer
-5. **ADHD-friendly**: Emoji markers, color coding, score badges in output
-6. **Token-optimized**: No full code examples in stories (reference actual files)
-
----
-
-## Related Documentation
-
-- **Migration Plan**: `.claude/inputs/plans/claude_code_plan_v2_feedly.md`
-- **Original Plan**: `.claude/inputs/Plan détaillé newsletter automatisée...md` (archived)
-- **Project Brief**: `.claude/memory-bank/projectbrief.md`
-- **Tech Context**: `.claude/memory-bank/techContext.md`
-- **Active Context**: `.claude/memory-bank/activeContext.md`
-
----
-
-**Last Updated**: 2025-12-21
-**Migration Status**: ✅ Completed (Phases 1-7)
-**Created by**: Feedly migration session
+**Last Updated**: 2025-12-22
+**Migration Target**: FreshRSS self-hosted
+**Complexity**: Low (architecture already decoupled)
