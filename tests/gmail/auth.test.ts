@@ -18,6 +18,7 @@ vi.mock('dotenv', () => ({
 vi.mock('googleapis', () => {
   const MockOAuth2 = class {
     setCredentials = vi.fn();
+    on = vi.fn();
   };
 
   return {

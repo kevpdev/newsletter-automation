@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { sendProcessedEmail } from '../../src/gmail/send.js';
+import { sendEmail } from '../../src/gmail/send.js';
 import type { OutputEmail } from '../../src/types.js';
 import * as authModule from '../../src/gmail/auth.js';
 
@@ -15,9 +15,10 @@ vi.mock('../../src/gmail/auth.js', () => ({
   getGmailClient: vi.fn(),
 }));
 
-describe('sendProcessedEmail', () => {
+describe('sendEmail', () => {
   const mockSend = vi.fn();
   const mockModify = vi.fn();
+  const mockLabelsList = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,8 +29,26 @@ describe('sendProcessedEmail', () => {
           send: mockSend,
           modify: mockModify,
         },
+        labels: {
+          list: mockLabelsList,
+        },
       },
     } as never);
+
+    // Mock labels list response by default
+    mockLabelsList.mockResolvedValue({
+      data: {
+        labels: [
+          { id: 'label-java', name: 'Output/Java' },
+          { id: 'label-angular', name: 'Output/Angular' },
+          { id: 'label-devops', name: 'Output/DevOps' },
+          { id: 'label-security', name: 'Output/Security' },
+          { id: 'label-frontend', name: 'Output/Frontend' },
+          { id: 'label-vue', name: 'Output/Vue' },
+          { id: 'label-architecture', name: 'Output/Architecture' },
+        ],
+      },
+    });
   });
 
   it('should send email with correct MIME format', async () => {
@@ -40,10 +59,10 @@ describe('sendProcessedEmail', () => {
       outputLabel: 'Output/Java',
     };
 
-    mockSend.mockResolvedValue({});
+    mockSend.mockResolvedValue({ data: { id: 'sent-msg-123' } });
     mockModify.mockResolvedValue({});
 
-    await sendProcessedEmail(output, 'original-id-123');
+    await sendEmail(output);
 
     expect(mockSend).toHaveBeenCalledOnce();
     const sendCall = mockSend.mock.calls[0][0];
@@ -69,7 +88,7 @@ describe('sendProcessedEmail', () => {
     expect(decodedMessage).toContain('<h1>Test Content</h1>');
   });
 
-  it('should modify original email with Processed label', async () => {
+  it('should apply output label to sent email', async () => {
     const output: OutputEmail = {
       to: 'user@example.com',
       subject: 'Test',
@@ -77,22 +96,23 @@ describe('sendProcessedEmail', () => {
       outputLabel: 'Output/Angular',
     };
 
-    mockSend.mockResolvedValue({});
+    mockSend.mockResolvedValue({ data: { id: 'sent-msg-456' } });
     mockModify.mockResolvedValue({});
 
-    await sendProcessedEmail(output, 'msg-456');
+    await sendEmail(output);
 
     expect(mockModify).toHaveBeenCalledOnce();
     expect(mockModify).toHaveBeenCalledWith({
       userId: 'me',
-      id: 'msg-456',
+      id: 'sent-msg-456',
       requestBody: {
-        addLabelIds: ['Processed'],
+        addLabelIds: ['label-angular'],
+        removeLabelIds: ['INBOX'],
       },
     });
   });
 
-  it('should send email before modifying original', async () => {
+  it('should send email before applying label', async () => {
     const output: OutputEmail = {
       to: 'test@test.com',
       subject: 'Order Test',
@@ -104,7 +124,7 @@ describe('sendProcessedEmail', () => {
 
     mockSend.mockImplementation(() => {
       callOrder.push('send');
-      return Promise.resolve({});
+      return Promise.resolve({ data: { id: 'sent-msg-789' } });
     });
 
     mockModify.mockImplementation(() => {
@@ -112,7 +132,7 @@ describe('sendProcessedEmail', () => {
       return Promise.resolve({});
     });
 
-    await sendProcessedEmail(output, 'msg-789');
+    await sendEmail(output);
 
     expect(callOrder).toEqual(['send', 'modify']);
   });
@@ -125,10 +145,10 @@ describe('sendProcessedEmail', () => {
       outputLabel: 'Output/Security',
     };
 
-    mockSend.mockResolvedValue({});
+    mockSend.mockResolvedValue({ data: { id: 'sent-msg-special' } });
     mockModify.mockResolvedValue({});
 
-    await sendProcessedEmail(output, 'msg-special');
+    await sendEmail(output);
 
     expect(mockSend).toHaveBeenCalledOnce();
     const sendCall = mockSend.mock.calls[0][0];
@@ -143,10 +163,10 @@ describe('sendProcessedEmail', () => {
       outputLabel: 'Output/Frontend',
     };
 
-    mockSend.mockResolvedValue({});
+    mockSend.mockResolvedValue({ data: { id: 'sent-msg-encode' } });
     mockModify.mockResolvedValue({});
 
-    await sendProcessedEmail(output, 'msg-encode');
+    await sendEmail(output);
 
     const sendCall = mockSend.mock.calls[0][0];
     const encoded = sendCall.requestBody.raw;
@@ -166,26 +186,25 @@ describe('sendProcessedEmail', () => {
 
     mockSend.mockRejectedValue(new Error('Send failed'));
 
-    await expect(sendProcessedEmail(output, 'msg-fail')).rejects.toThrow(
-      'Send failed'
-    );
+    await expect(sendEmail(output)).rejects.toThrow('Send failed');
 
     expect(mockModify).not.toHaveBeenCalled();
   });
 
-  it('should throw error if modify fails', async () => {
+  it('should throw error if label not found', async () => {
     const output: OutputEmail = {
-      to: 'modify-fail@example.com',
-      subject: 'Modify Fail Test',
+      to: 'label-fail@example.com',
+      subject: 'Label Not Found Test',
       htmlBody: '<p>Content</p>',
-      outputLabel: 'Output/Architecture',
+      outputLabel: 'Output/Unknown',
     };
 
-    mockSend.mockResolvedValue({});
-    mockModify.mockRejectedValue(new Error('Modify failed'));
+    mockSend.mockResolvedValue({ data: { id: 'sent-msg-unknown' } });
 
-    await expect(
-      sendProcessedEmail(output, 'msg-modify-fail')
-    ).rejects.toThrow('Modify failed');
+    await expect(sendEmail(output)).rejects.toThrow(
+      'Label "Output/Unknown" not found'
+    );
+
+    expect(mockModify).not.toHaveBeenCalled();
   });
 });

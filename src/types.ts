@@ -1,4 +1,4 @@
-export type { Article, FeedlyArticle, FeedlyResponse } from './feedly/types.js';
+export type { Article, FreshRSSItem, FreshRSSResponse } from './freshrss/types.js';
 export type { ScoredArticle } from './ai/scoring.js';
 export type { Digest } from './aggregator.js';
 
@@ -10,10 +10,10 @@ export interface OutputEmail {
   outputLabel: string;
 }
 
-/** Domain configuration (color, labels, Feedly collection) */
+/** Domain configuration (color, labels, FreshRSS stream) */
 export interface DomainConfig {
-  label: string;
+  label: 'Java' | 'Vue' | 'Angular' | 'DevOps' | 'AI' | 'Architecture' | 'Security' | 'Frontend';
   color: string;
   outputLabel: string;
-  feedlyCollectionId: string;
+  freshrssStreamId: string;
 }

@@ -124,7 +124,7 @@ export function renderDigest(digest: Digest, domain: DomainConfig): string {
   <!-- Footer -->
   <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 14px;">
     <p style="margin: 0;">
-      Tech Digest · Powered by Feedly + Claude 3.5 Haiku
+      Tech Digest · Powered by FreshRSS + Claude 3.5 Haiku
     </p>
   </div>
 

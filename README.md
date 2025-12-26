@@ -1,6 +1,6 @@
 # Newsletter Automation - Tech Digest
 
-> **Agrégation intelligente de tech news via Feedly** - Collecte d'articles via Feedly Collections, scoring avec Claude Haiku, génération de digests ADHD-friendly, envoi par email chaque semaine.
+> **Agrégation intelligente de tech news via FreshRSS** - Collecte d'articles via FreshRSS self-hosted (50/semaine, 7 jours), scoring avec Gemini Flash 2.5, génération de digests ADHD-friendly (5-10 articles), envoi par email chaque semaine.
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue)](https://www.typescriptlang.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-20.x-green)](https://nodejs.org/)
@@ -27,7 +27,7 @@
 
 ## 🎯 Aperçu
 
-**Newsletter Automation** collecte les articles pertinents depuis vos collections Feedly, les score automatiquement via Claude Haiku, et génère un digest hebdomadaire organisé par priorité.
+**Newsletter Automation** collecte les articles pertinents depuis votre serveur FreshRSS self-hosted (50 articles, 7 derniers jours), les score automatiquement via Gemini Flash 2.5, et génère un digest hebdomadaire optimisé (5-10 articles) organisé par priorité avec design ADHD-friendly.
 
 ### Flow de données
 
@@ -39,30 +39,33 @@
          │
          v
 ┌─────────────────────────────────────────────────────┐
-│  1. Récupération Feedly (Collections)              │
-│     - Fetch N articles non-lus d'une collection     │
+│  1. Récupération FreshRSS (Google Reader API)      │
+│     - Fetch 50 articles par catégorie              │
+│     - Filtre: derniers 7 jours (tous statuts)     │
 │     - Title, summary, URL, date publication        │
 └────────┬────────────────────────────────────────────┘
          │
          v
 ┌─────────────────────────────────────────────────────┐
-│  2. Scoring AI (Claude Haiku)                      │
+│  2. Scoring AI (Gemini Flash 2.5)                 │
 │     - Évalue pertinence (1-10) pour domaine        │
-│     - Rapide: ~0.5s/article                        │
+│     - Rapide: ~0.2s/article (cost-effective)      │
 └────────┬────────────────────────────────────────────┘
          │
          v
 ┌─────────────────────────────────────────────────────┐
-│  3. Agrégation par Score                           │
-│     - 🔴 Critical: score ≥ 8                       │
-│     - 🟠 Important: score 6-7                      │
-│     - 🟡 Bonus: score 3-5                          │
+│  3. Agrégation Adaptative par Score                │
+│     - 🔴 Critical: TOUS (score ≥ 8)              │
+│     - 🟠 Important: TOUS (score 6-7)             │
+│     - 🟡 Bonus: jusqu'à MAX 10 articles           │
+│     - Total digest: 5-10 articles                  │
+│     - Stratégie: Remplit jusqu'au max              │
 └────────┬────────────────────────────────────────────┘
          │
          v
 ┌─────────────────────────────────────────────────────┐
 │  4. Render HTML Digest ADHD-Friendly                │
-│     - Couleur domaine (#FF6B6B Java, #DD0031 Angular) │
+│     - Couleur domaine (#FF6B6B Java, #42B983 Vue)  │
 │     - Sections critiques → importantes → bonus      │
 │     - Liens cliquables vers articles originaux      │
 └────────┬────────────────────────────────────────────┘
@@ -75,29 +78,40 @@
 └─────────────────────────────────────────────────────┘
 ```
 
-### Avantages Feedly
+### Avantages FreshRSS Self-Hosted
 
-✅ **Pas de scraping** - API officielle Feedly
-✅ **Déduplication** - Articles groupés par source
-✅ **Smart scoring** - Contexte domaine via Claude Haiku
-✅ **Agrégation** - Format digest lisible (3-5 articles clés)
+✅ **Pas de coûts récurrents** - Serveur VPS déjà disponible (~5-10€/mois)
+✅ **Pas de rate limits** - API locale, contrôle total
+✅ **Compatibilité Google Reader** - API standard, bien documentée
+✅ **Smart scoring** - Contexte domaine via Gemini Flash 2.5 (cost-effective)
+✅ **Digest adaptatif** - 5-10 articles (remplit jusqu'au max, ADHD-friendly)
+
+### Comparaison Feedly vs FreshRSS
+
+| Aspect | Feedly Enterprise | FreshRSS (Solution actuelle) |
+|--------|------------------|------------------------------|
+| **Coût** | ~$18/mois ($216/an) | ~5-10€/mois VPS (~$60-131/an) |
+| **Hébergement** | Cloud Feedly | VPS self-hosted |
+| **Rate Limits** | Restrictifs | Aucun (serveur perso) |
+| **Contrôle** | Limité | Total |
+| **API** | Propriétaire | Google Reader (standard) |
 
 ---
 
 ## 🏗️ Architecture
 
-### Approche intelligente et centralisée
+### Approche intelligente et self-hosted
 
-**Flow principal** : Feedly Collections → Claude Haiku Scoring → Agrégation → HTML Digest → Email
+**Flow principal** : FreshRSS (self-hosted) → Claude Haiku Scoring → Agrégation (max 5) → HTML Digest → Email
 
-**Design** : Un digest par collection Feedly, articles groupés par score (Critical/Important/Bonus)
+**Design** : Un digest par catégorie FreshRSS, articles groupés par score avec limites ADHD-friendly
 
 ### Stack technique
 
 | Composant | Technologie | Rôle |
 |-----------|-------------|------|
 | **Runtime** | Node.js 20 + TypeScript 5 | Exécution typée strict mode |
-| **Feedly API** | REST API officielle | Récupération articles collections |
+| **FreshRSS API** | Google Reader API (self-hosted) | Récupération articles par catégorie |
 | **AI Scoring** | Claude Haiku (OpenRouter) | Scoring rapide 1-10/article |
 | **Email** | Gmail API (OAuth2) | Envoi digest + label |
 | **Automation** | GitHub Actions | Exécution hebdomadaire (cron) |
@@ -107,16 +121,16 @@
 
 ```
 src/
-├── types.ts              # Interfaces (FeedlyArticle, Article, ScoredArticle, Digest, OutputEmail)
-├── config.ts             # Domaines + Feedly collectionId + couleurs
-├── feedly/
-│   ├── client.ts         # Client Feedly API (fetch articles)
-│   └── types.ts          # Types Feedly
+├── types.ts              # Interfaces (FreshRSSItem, Article, ScoredArticle, Digest, OutputEmail)
+├── config.ts             # Domaines + FreshRSS streamId + couleurs
+├── freshrss/
+│   ├── client.ts         # Client FreshRSS API (fetch articles Google Reader)
+│   └── types.ts          # Types FreshRSS
 ├── ai/
 │   ├── scoring.ts        # Scoring Claude Haiku (batch par domaine)
 │   ├── scoring-prompts.ts # Prompts spécifiques domaines
 │   └── openrouter.ts     # Client OpenRouter + retry logic
-├── aggregator.ts         # Agrégation par score (critical/important/bonus)
+├── aggregator.ts         # Agrégation par score avec limites (max 5 articles)
 ├── renderer.ts           # HTML digest ADHD-friendly (sections score, couleurs domaine)
 ├── gmail/
 │   ├── auth.ts           # OAuth2 Gmail
@@ -131,10 +145,11 @@ src/
 
 ### Collecte intelligente
 
-- ✅ **Feedly Collections** - Lecture multi-sources (9+ newsletters)
+- ✅ **FreshRSS Self-Hosted** - Serveur RSS personnel (VPS)
+- ✅ **API Google Reader** - Standard, stable, bien documenté
 - ✅ **Récupération articles** - Title, summary, URL, date (fetch 20 articles/semaine)
-- ✅ **Articles non-lus** - Filtre automatique, marque comme lus après traitement
-- ✅ **Déduplication** - Evite articles dupliqués par URL
+- ✅ **Articles non-lus** - Filtre automatique `xt=user/-/state/com.google/read`
+- ✅ **Pas de rate limits** - Serveur personnel
 
 ### Scoring intelligent
 
@@ -145,17 +160,18 @@ src/
 
 ### Digest ADHD-friendly
 
-- 🎨 **Couleurs domaine** - 8 couleurs distinctes (Java #FF6B6B, Angular #DD0031)
-- 🔴 **Section Critical** - Articles score ≥ 8 (les plus importants)
-- 🟠 **Section Important** - Articles score 6-7
-- 🟡 **Section Bonus** - Articles score 3-5 (nice-to-read)
+- 🎨 **Couleurs domaine** - 8 couleurs distinctes (Java #FF6B6B, Vue #42B983)
+- 🔴 **Section Critical** - Max 2 articles (score ≥ 8)
+- 🟠 **Section Important** - Max 2 articles (score 6-7)
+- 🟡 **Section Bonus** - Max 1 article (score 3-5)
+- 🎯 **Limite totale** - Max 5 articles par digest (évite surcharge)
 - 🔗 **Liens cliquables** - URLs vers articles originaux
 - 📱 **Responsive** - Inline styles tous clients email
 
 ### Sécurité & Qualité
 
 - 🔒 **Validation scoring** - Score 1-10 uniquement, rejet si invalide
-- 🔐 **OAuth2 Gmail + Feedly** - Tokens refresh automatique
+- 🔐 **OAuth2 Gmail** - Tokens refresh automatique
 - 🚫 **No secrets** - Variables d'environnement uniquement
 - 📝 **Logging complet** - Winston console + logs/ rotatifs
 
@@ -165,6 +181,7 @@ src/
 
 - **Node.js** ≥ 20.x
 - **pnpm** ≥ 8.x
+- **Serveur FreshRSS** self-hosted (VPS avec Docker recommandé)
 - **Compte Google** avec Gmail API activée
 - **Compte OpenRouter** avec API key
 
@@ -202,11 +219,12 @@ cp .env.example .env
 Éditer `.env`:
 
 ```bash
+# FreshRSS (self-hosted server)
+FRESHRSS_BASE_URL=https://rss.your-domain.com
+FRESHRSS_TOKEN=your-api-token-here
+
 # OpenRouter API (Claude Haiku scoring)
 OPENROUTER_API_KEY=sk-or-v1-xxxxx
-
-# Feedly API (collecte articles)
-FEEDLY_API_KEY=xxxxxxx
 
 # Gmail OAuth2 (envoi digests)
 GMAIL_CLIENT_ID=xxxxx.apps.googleusercontent.com
@@ -216,6 +234,36 @@ GMAIL_REFRESH_TOKEN=xxxxx
 # Email utilisateur (destinataire digests)
 USER_EMAIL=votre-email@example.com
 ```
+
+### Configurer FreshRSS
+
+**1. Installation FreshRSS** (si pas déjà fait):
+
+```bash
+# Via Docker (recommandé)
+docker run -d \
+  --name freshrss \
+  -p 8080:80 \
+  -v freshrss_data:/var/www/FreshRSS/data \
+  freshrss/freshrss
+
+# Accès: http://your-vps-ip:8080
+# Configuration initiale: créer compte admin
+```
+
+**2. Activer API Google Reader**:
+1. FreshRSS → Paramètres → API
+2. Activer "API Google Reader"
+3. Générer token → Copier pour `FRESHRSS_TOKEN`
+
+**3. Créer catégories** (labels):
+1. FreshRSS → Flux → Catégories → Ajouter
+2. Créer: `Java`, `Vue`, `Angular`, etc.
+3. Ajouter flux RSS dans chaque catégorie
+
+**4. Obtenir Stream IDs**:
+- Format: `user/-/label/Java`
+- Configuré automatiquement dans `src/config.ts`
 
 ### Obtenir les credentials Gmail
 
@@ -235,36 +283,26 @@ USER_EMAIL=votre-email@example.com
    # - https://www.googleapis.com/auth/gmail.modify
    ```
 
-### Obtenir Feedly API Key
-
-1. Compte Feedly (https://feedly.com)
-2. Settings → API → Personal access tokens
-3. Créer token "Perso" → Copier la clé
-
 ### Obtenir OpenRouter API Key
 
 1. S'inscrire sur https://openrouter.ai
 2. Dashboard → API Keys → Create Key
 3. Copier la clé `sk-or-v1-xxxxx` (utilise Claude Haiku)
 
-### Configurer Collections Feedly
+### Configurer Domaines
 
-1. **Dans Feedly web** :
-   - Créer ou identifier collections (ex: "Java Tech", "Vue Weekly", etc.)
-   - Copier **Collection ID** (format: `collection/xxxxx/category/xxxxx`)
-
-2. **Dans `src/config.ts`** :
-   ```typescript
-   export const DOMAINS: DomainConfig[] = [
-     {
-       label: 'Java',
-       color: '#FF6B6B',
-       feedlyCollectionId: 'collection/xxxxx/category/xxxxx',
-       outputLabel: 'Output/Java'
-     },
-     // ... autres domaines
-   ];
-   ```
+**Dans `src/config.ts`** :
+```typescript
+export const DOMAINS: DomainConfig[] = [
+  {
+    label: 'Java',
+    color: '#FF6B6B',
+    freshrssStreamId: process.env.FRESHRSS_JAVA_STREAM_ID || 'user/-/label/Java',
+    outputLabel: 'Output/Java'
+  },
+  // ... autres domaines (commentés pour MVP)
+];
+```
 
 ### Créer les labels Gmail
 
@@ -272,13 +310,13 @@ Manuellement dans Gmail web, créer **Output/** labels pour chaque domaine :
 
 **Labels Output (digests)** :
 - `Output/Java` (couleur #FF6B6B recommandée)
+- `Output/Vue` (couleur #42B983 recommandée)
 - `Output/Angular` (couleur #DD0031 recommandée)
 - `Output/DevOps` (couleur #1D63F7 recommandée)
 - `Output/AI` (couleur #9D4EDD recommandée)
 - `Output/Architecture` (couleur #3A86FF recommandée)
 - `Output/Security` (couleur #FB5607 recommandée)
 - `Output/Frontend` (couleur #8338EC recommandée)
-- `Output/Vue` (couleur #42B983 recommandée)
 
 ---
 
@@ -294,7 +332,7 @@ pnpm run build
 pnpm start
 
 # Watch mode (rebuild auto)
-pnpm run build --watch
+pnpm run dev
 ```
 
 ### Tests
@@ -306,8 +344,8 @@ pnpm test
 # Watch mode
 pnpm run test:watch
 
-# Coverage
-pnpm run test:coverage
+# UI mode
+pnpm run test:ui
 ```
 
 ### Logs
@@ -318,17 +356,17 @@ Les logs sont écrits dans:
 
 Format:
 ```
-2025-01-15 10:30:45 [info]: 🚀 Starting Java Tech Digest (Feedly + AI Scoring)
+2025-01-15 10:30:45 [info]: 🚀 Starting Tech Digest Batch (FreshRSS + Claude Haiku)
 2025-01-15 10:30:46 [info]: 📁 Domain: Java
-2025-01-15 10:30:47 [info]: 📡 Fetching articles from Feedly...
+2025-01-15 10:30:47 [info]: 📡 Fetching articles from FreshRSS...
 2025-01-15 10:30:48 [info]: ✓ Fetched 20 articles
 2025-01-15 10:30:49 [info]: 🤖 Scoring articles with Claude Haiku...
 2025-01-15 10:30:59 [info]: ✓ Scored 20 articles
-2025-01-15 10:31:00 [info]: 📊 Digest breakdown: 3 critical, 5 important, 8 bonus
+2025-01-15 10:31:00 [info]: 📊 Digest breakdown: 2 critical, 2 important, 1 bonus (total: 5/20)
 2025-01-15 10:31:01 [info]: 🎨 Rendering HTML digest...
 2025-01-15 10:31:02 [info]: 📧 Sending tech digest email...
 2025-01-15 10:31:04 [info]: ============================================================
-2025-01-15 10:31:04 [info]: ✅ Java Tech Digest completed in 19.2s
+2025-01-15 10:31:04 [info]: ✅ Tech Digest completed in 19.2s
 2025-01-15 10:31:04 [info]: ============================================================
 ```
 
@@ -351,9 +389,9 @@ Format:
 6. Upload logs on failure (artifact 7 jours)
 
 **Flow d'exécution** :
-1. **Feedly API** : Fetch 20 articles non-lus de la collection Java
+1. **FreshRSS API** : Fetch 20 articles non-lus catégorie Java
 2. **Claude Haiku** : Score 1-10 chaque article (~0.5s/article = 10s total)
-3. **Agrégation** : Grouper par score → Critical (≥8), Important (6-7), Bonus (3-5)
+3. **Agrégation** : Sélectionner top 5 (2 critical, 2 important, 1 bonus)
 4. **Digest HTML** : Render sections avec couleur Java, liens articles
 5. **Email** : Envoyer à USER_EMAIL avec label Output/Java
 
@@ -363,7 +401,8 @@ Configurer dans **Settings → Secrets and variables → Actions**:
 
 | Secret | Exemple | Description |
 |--------|---------|-------------|
-| `FEEDLY_API_KEY` | `xxxxxxx` | Token API Feedly |
+| `FRESHRSS_BASE_URL` | `https://rss.your-domain.com` | URL serveur FreshRSS |
+| `FRESHRSS_TOKEN` | `xxxxxxxxxxxxxxx` | Token API FreshRSS |
 | `OPENROUTER_API_KEY` | `sk-or-v1-xxxxx` | Clé API OpenRouter (Claude Haiku) |
 | `GMAIL_CLIENT_ID` | `xxxxx.apps.googleusercontent.com` | OAuth2 Client ID |
 | `GMAIL_CLIENT_SECRET` | `xxxxx` | OAuth2 Client Secret |
@@ -390,24 +429,24 @@ newsletter-automation/
 │   └── workflows/
 │       └── run-batch.yml      # GitHub Actions (cron weekly)
 ├── src/
-│   ├── types.ts               # Interfaces (FeedlyArticle, Article, ScoredArticle, Digest, OutputEmail)
-│   ├── config.ts              # Domaines + Feedly collectionId + couleurs
-│   ├── feedly/
-│   │   ├── client.ts          # Client Feedly API (fetch articles, mark as read)
-│   │   └── types.ts           # Types Feedly (FeedlyArticle, FeedlyResponse)
+│   ├── types.ts               # Interfaces (FreshRSSItem, Article, ScoredArticle, Digest)
+│   ├── config.ts              # Domaines + FreshRSS streamId + couleurs
+│   ├── freshrss/
+│   │   ├── client.ts          # Client FreshRSS (Google Reader API)
+│   │   └── types.ts           # Types FreshRSS (FreshRSSItem, FreshRSSResponse)
 │   ├── ai/
 │   │   ├── scoring.ts         # Batch scoring Claude Haiku
 │   │   ├── scoring-prompts.ts # Prompts spécifiques domaines
 │   │   ├── openrouter.ts      # Client OpenRouter + retry logic
-│   │   └── prompts/           # Prompts par domaine (vue.prompt.ts, etc.)
-│   ├── aggregator.ts          # Agrégation par score (critical/important/bonus)
-│   ├── renderer.ts            # HTML digest ADHD-friendly (sections score)
+│   │   └── prompts/           # Prompts par domaine
+│   ├── aggregator.ts          # Agrégation par score avec limites (max 5)
+│   ├── renderer.ts            # HTML digest ADHD-friendly
 │   ├── gmail/
 │   │   ├── auth.ts            # OAuth2 Gmail
 │   │   └── send.ts            # Envoi digest + label Output/*
 │   ├── logger.ts              # Winston (console + logs/)
 │   └── index.ts               # Orchestration (fetch → score → aggregate → render → send)
-├── tests/                     # Tests Jest
+├── tests/                     # Tests Vitest
 ├── logs/                      # Logs Winston (gitignored)
 ├── .env.example               # Template variables env
 ├── package.json
@@ -423,20 +462,24 @@ L'architecture supporte **8 domaines** configurés dans `src/config.ts`. **MVP a
 
 ### Domaines disponibles
 
-| Domaine | Couleur | Feedly Collection | Scoring Prompt |
-|---------|---------|------------------|-----------------|
-| **Java** | #FF6B6B | `collection/xxx/java` | Java MVP actif |
-| **Angular** | #DD0031 | `collection/xxx/angular` | Prêt |
-| **DevOps** | #1D63F7 | `collection/xxx/devops` | Prêt |
-| **AI** | #9D4EDD | `collection/xxx/ai` | Prêt |
-| **Architecture** | #3A86FF | `collection/xxx/arch` | Prêt |
-| **Security** | #FB5607 | `collection/xxx/sec` | Prêt |
-| **Frontend** | #8338EC | `collection/xxx/fe` | Prêt |
-| **Vue** | #42B983 | `collection/xxx/vue` | Prêt |
+| Domaine | Couleur | FreshRSS Stream | Scoring Prompt |
+|---------|---------|-----------------|-----------------|
+| **Java** | #FF6B6B | `user/-/label/Java` | Java MVP actif |
+| **Vue** | #42B983 | `user/-/label/Vue` | Prêt |
+| **Angular** | #DD0031 | `user/-/label/Angular` | Prêt |
+| **DevOps** | #1D63F7 | `user/-/label/DevOps` | Prêt |
+| **AI** | #9D4EDD | `user/-/label/AI` | Prêt |
+| **Architecture** | #3A86FF | `user/-/label/Architecture` | Prêt |
+| **Security** | #FB5607 | `user/-/label/Security` | Prêt |
+| **Frontend** | #8338EC | `user/-/label/Frontend` | Prêt |
 
 ### Activer un nouveau domaine
 
-**1. Ajouter la config** dans `src/config.ts`:
+**1. Créer catégorie FreshRSS**:
+- FreshRSS → Flux → Catégories → Ajouter "Vue"
+- Ajouter flux RSS Vue (Vue Weekly, etc.)
+
+**2. Décommenter config** dans `src/config.ts`:
 
 ```typescript
 export const DOMAINS: DomainConfig[] = [
@@ -444,19 +487,10 @@ export const DOMAINS: DomainConfig[] = [
   {
     label: 'Vue',
     color: '#42B983',
-    feedlyCollectionId: 'collection/xxxxx/category/xxxxx',
+    freshrssStreamId: 'user/-/label/Vue',
     outputLabel: 'Output/Vue'
   }
 ];
-```
-
-**2. Créer scoring prompt** (si custom) dans `src/ai/scoring-prompts.ts`:
-
-```typescript
-export const SCORING_PROMPTS: Record<string, string> = {
-  java: `...`,
-  vue: `Tu es un expert Vue 3. Évalue la pertinence (1-10)...`
-};
 ```
 
 **3. Créer label Gmail**:
@@ -469,28 +503,29 @@ pnpm run build && pnpm start
 
 **Modulation du flow** :
 - Modifier `src/index.ts` pour loop sur `DOMAINS` (actuellement: Java uniquement)
-- Ajouter prompts spécifiques dans `src/ai/scoring-prompts.ts`
+- Prompts scoring déjà disponibles dans `src/ai/scoring-prompts.ts`
 - Tout le reste (scoring, rendering, email) est générique
 
 ---
 
 ## 🐛 Dépannage
 
-### Problème: Aucun article fetchés de Feedly
+### Problème: Aucun article fetché de FreshRSS
 
-**Cause 1**: Collection ID invalide
-
-**Solution**:
-1. Vérifier `src/config.ts` → `feedlyCollectionId` exact (format: `collection/xxxxx/category/xxxxx`)
-2. Tester collection dans Feedly web
-3. Copier Collection ID depuis API Feedly settings
-
-**Cause 2**: FEEDLY_API_KEY invalide ou expirée
+**Cause 1**: FRESHRSS_BASE_URL ou FRESHRSS_TOKEN invalide
 
 **Solution**:
-1. Regénérer token dans Feedly → Settings → API → Personal access tokens
-2. Mettre à jour `.env` et GitHub Secrets
-3. Vérifier token commence par `xxxxxxx`
+1. Vérifier `.env` → `FRESHRSS_BASE_URL` pointe vers serveur
+2. Tester accès: `curl https://rss.your-domain.com/api/greader.php`
+3. Régénérer token: FreshRSS → Paramètres → API → Token
+4. Mettre à jour `.env` et GitHub Secrets
+
+**Cause 2**: Catégorie/Stream ID inexistant
+
+**Solution**:
+1. Vérifier catégorie existe: FreshRSS → Flux → Catégories
+2. Vérifier `src/config.ts` → `freshrssStreamId` = `user/-/label/Java`
+3. Stream ID case-sensitive (Java ≠ java)
 
 ### Problème: Scoring failed - réponse AI invalide
 
@@ -502,20 +537,15 @@ pnpm run build && pnpm start
 3. Article skippé si réponse invalide → continue avec suivant
 4. Vérifier OPENROUTER_API_KEY valide
 
-### Problème: Rate limit 429 (Feedly ou OpenRouter)
+### Problème: Rate limit 429 (OpenRouter)
 
-**Cause 1**: Trop de requêtes Feedly (20 articles)
-
-**Solution**:
-- Réduire `fetchFeedlyArticles()` limit (ex: 10 au lieu de 20)
-- Feedly gratuit: ~100 req/heure
-
-**Cause 2**: Trop de scoring OpenRouter
+**Cause**: Trop de scoring OpenRouter
 
 **Solution**:
 - Retry logic automatique: 1s → 2s → 4s (max 3)
 - Vérifier logs: "Rate limit hit (429), retrying in Xms"
 - Réduire articles ou attendre avant prochain run
+- FreshRSS n'a pas de rate limits (self-hosted)
 
 ### Problème: Gmail auth failed
 
@@ -537,15 +567,15 @@ pnpm run build && pnpm start
 3. Couleur recommandée: #FF6B6B
 4. Tester avec `pnpm start`
 
-### Problème: Digest envoyé mais structure HTML cassée
+### Problème: FreshRSS serveur inaccessible
 
-**Cause**: Renderer bug ou contenu malformé
+**Cause**: VPS down ou firewall bloque port
 
 **Solution**:
-1. Vérifier logs: "Rendering digest HTML"
-2. Vérifier articles ont: title, summary, url, score
-3. Tester HTML localement: `pnpm start` + check email
-4. Reporter issue avec logs si erreur persistante
+1. Tester accès direct: `curl https://rss.your-domain.com`
+2. Vérifier Docker container: `docker ps | grep freshrss`
+3. Vérifier firewall VPS autorise port 80/443
+4. Vérifier DNS pointe vers VPS IP
 
 ---
 
@@ -555,12 +585,14 @@ pnpm run build && pnpm start
 
 | Phase | Durée | % Total |
 |-------|-------|---------|
-| Fetch Feedly (20 articles) | 2-3s | 10-15% |
+| Fetch FreshRSS (20 articles) | 0.5-1s | 3-5% |
 | Claude Haiku scoring (20 × 0.5s) | 10-11s | 50-55% |
 | Agrégation by score | 0.2s | 1% |
 | Render HTML digest | 0.5s | 2-3% |
 | Envoi Gmail + label | 2-3s | 10-15% |
-| **Total** | **15-20s** | **100%** |
+| **Total** | **14-18s** | **100%** |
+
+**Note**: FreshRSS self-hosted est ~2-3x plus rapide que Feedly API (pas de rate limits, serveur local).
 
 ### Consommation tokens
 
@@ -574,16 +606,15 @@ pnpm run build && pnpm start
 - **Total/an**: ~332,800 tokens
 - **Coût Claude Haiku**: ~$0.025/semaine (~$1.30/an)
 
-### Efficacité vs alternatives
+### Coûts comparés
 
-| Solution | Temps | Tokens/semaine | Coût/an |
-|----------|-------|-----------------|---------|
-| **Feedly + Haiku** (actuel) | 15-20s | 6,400 | $1.30 |
-| Feedly + Claude Opus | 15-20s | 6,400 | $65 |
-| Web scraping + Llama | 2-3min | 200,000 | $0 |
-| Manual tech watch | ∞ | 0 | $0 (temps!) |
+| Solution | Hébergement/an | AI/an | Total/an |
+|----------|----------------|-------|----------|
+| **FreshRSS + Haiku** (actuel) | ~$60-131 (VPS) | $1.30 | **$61-132** |
+| Feedly Enterprise + Haiku | $216 | $1.30 | $217 |
+| Web scraping + Llama | $60 (VPS) | $0 | $60 |
 
-**Verdict**: Feedly + Claude Haiku = meilleur ratio coût/qualité/temps
+**Verdict**: FreshRSS + Claude Haiku = meilleur ratio contrôle/qualité/coût (moins cher que Feedly, meilleure qualité que web scraping)
 
 ---
 
@@ -610,4 +641,4 @@ Pour questions ou suggestions, ouvrir une issue GitHub.
 
 ---
 
-**Built with ❤️ using TypeScript, Feedly, Claude Haiku, and Gmail API**
+**Built with ❤️ using TypeScript, FreshRSS, Claude Haiku, and Gmail API**

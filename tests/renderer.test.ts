@@ -8,7 +8,7 @@ const javaDomain: DomainConfig = {
   label: 'Java',
   color: '#FF6B6B',
   outputLabel: 'Output/Java',
-  feedlyCollectionId: 'test',
+  freshrssStreamId: 'user/-/label/Test',
 };
 
 const createMockArticle = (id: string, score: number, title: string): ScoredArticle => ({
@@ -225,9 +225,9 @@ describe('renderDigest', () => {
   });
 
   describe('Footer', () => {
-    it('should include footer text with Feedly + Haiku', () => {
+    it('should include footer text with FreshRSS + Haiku', () => {
       const html = renderDigest(validDigest, javaDomain);
-      expect(html).toContain('Powered by Feedly + Claude 3.5 Haiku');
+      expect(html).toContain('Powered by FreshRSS + Claude 3.5 Haiku');
     });
 
     it('should have footer styling', () => {

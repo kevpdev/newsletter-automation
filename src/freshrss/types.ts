@@ -1,14 +1,15 @@
-export interface FeedlyArticle {
+export interface FreshRSSItem {
   id: string;
   title: string;
   summary?: { content: string };
-  originId: string;
-  published: number;
+  canonical?: Array<{ href: string }>;
   alternate?: Array<{ href: string }>;
+  published: number;
+  origin?: { title: string };
 }
 
-export interface FeedlyResponse {
-  items: FeedlyArticle[];
+export interface FreshRSSResponse {
+  items: FreshRSSItem[];
   continuation?: string;
 }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { scoreArticle, scoreArticles } from '../../src/ai/scoring.js';
 import * as openrouter from '../../src/ai/openrouter.js';
-import type { Article } from '../../src/feedly/types.js';
+import type { Article } from '../../src/types.js';
 
 vi.mock('../../src/ai/openrouter.js');
 vi.mock('../../src/logger.js', () => ({

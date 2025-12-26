@@ -2,14 +2,14 @@ import { DomainConfig } from './types.js';
 
 /**
  * Java domain configuration (MVP)
- * Proactive tech watch via Feedly Collections + Claude Haiku scoring
+ * Proactive tech watch via FreshRSS + Claude Haiku scoring
  */
 export const DOMAINS: DomainConfig[] = [
   {
     label: 'Java',
     color: '#FF6B6B',
     outputLabel: 'Output/Java',
-    feedlyCollectionId: process.env.FEEDLY_JAVA_COLLECTION_ID || '',
+    freshrssStreamId: process.env.FRESHRSS_JAVA_STREAM_ID || 'user/-/label/Java',
   },
 ];
 
@@ -24,3 +24,11 @@ export const DOMAINS: DomainConfig[] = [
 // { label: 'Architecture', color: '#3A86FF', outputLabel: 'Output/Architecture' },
 // { label: 'Security', color: '#FB5607', outputLabel: 'Output/Security' },
 // { label: 'Frontend', color: '#8338EC', outputLabel: 'Output/Frontend' },
+
+export function getDomainByLabel(label: string): DomainConfig {
+  const domain = DOMAINS.find(d => d.label === label);
+  if (!domain) {
+    throw new Error(`Unknown domain: ${label}`);
+  }
+  return domain;
+}
