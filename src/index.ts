@@ -48,53 +48,43 @@ function getCurrentWeek(): string {
 }
 
 /**
- * Main orchestration function: Coordinates the entire digest pipeline.
+ * Processes digest pipeline for a single domain.
  *
- * Pipeline:
+ * Pipeline for one domain:
  * 1. Fetch articles from FreshRSS (50 articles, last 7 days)
  * 2. Score articles with AI (relevance 1-10)
  * 3. Aggregate best articles (5-10 total, prioritizing high scores)
  * 4. Render ADHD-friendly HTML email
  * 5. Send via Gmail with appropriate labels
  *
- * Error handling:
- * - Logs all errors for observability
- * - Skips digest if insufficient articles or scoring fails
- * - Continues gracefully instead of crashing
- *
- * @throws Error if environment variables missing or API calls fail
+ * @param domain - Domain configuration (label, colors, stream ID, etc)
+ * @param userEmail - Target email address
+ * @returns true if digest was sent successfully, false if skipped or failed
  */
-async function main() {
-  const startTime = Date.now();
-
+async function processDomain(
+  domain: typeof DOMAINS[0],
+  userEmail: string
+): Promise<boolean> {
   try {
-    logger.info('🚀 Starting Tech Digest Batch (FreshRSS + Gemini Flash 2.5)');
-
-    const userEmail = process.env.USER_EMAIL;
-    if (!userEmail) {
-      throw new Error('USER_EMAIL environment variable not set');
-    }
-
-    const javaDomain = DOMAINS[0];
-    logger.info(`📁 Domain: ${javaDomain.label}`);
+    logger.info(`📁 Processing domain: ${domain.label}`);
 
     logger.info('📡 Fetching articles from FreshRSS...');
-    const articles = await fetchArticlesForStream(javaDomain.freshrssStreamId);
+    const articles = await fetchArticlesForStream(domain.freshrssStreamId);
 
     if (articles.length === 0) {
-      logger.warn('No articles fetched from FreshRSS, skipping digest');
-      return;
+      logger.warn(`⊘ No articles fetched for ${domain.label}, skipping digest`);
+      return false;
     }
 
     logger.info(`✓ Fetched ${articles.length} articles`);
 
-    // Note: Using Gemini Flash 2.5 (faster, cost-effective) instead of Claude Haiku
+    // Note: Using Gemini Flash 2.5 (faster, cost-effective)
     logger.info('🤖 Scoring articles with Gemini Flash 2.5...');
-    const scoredArticles = await scoreArticles(articles, 'java');
+    const scoredArticles = await scoreArticles(articles, domain.label.toLowerCase());
 
     if (scoredArticles.length === 0) {
-      logger.warn('No articles successfully scored, skipping digest');
-      return;
+      logger.warn(`⊘ No articles scored for ${domain.label}, skipping digest`);
+      return false;
     }
 
     logger.info(`✓ Scored ${scoredArticles.length} articles`);
@@ -102,22 +92,68 @@ async function main() {
     const digest = aggregateByScore(scoredArticles);
 
     logger.info('🎨 Rendering HTML digest...');
-    const htmlBody = renderDigest(digest, javaDomain);
+    const htmlBody = renderDigest(digest, domain);
 
     const outputEmail: OutputEmail = {
       to: userEmail,
-      subject: `[Java] Tech Digest - ${getCurrentWeek()}`,
+      subject: `[${domain.label}] Tech Digest - ${getCurrentWeek()}`,
       htmlBody,
-      outputLabel: javaDomain.outputLabel,
+      outputLabel: domain.outputLabel,
     };
 
     logger.info('📧 Sending tech digest email...');
     await sendEmail(outputEmail);
 
+    logger.info(`✅ ${domain.label} digest sent successfully\n`);
+    return true;
+  } catch (error) {
+    logger.error(`❌ Error processing ${domain.label}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    return false;
+  }
+}
+
+/**
+ * Main orchestration function: Processes all domains sequentially.
+ *
+ * Workflow:
+ * 1. Validate environment (USER_EMAIL required)
+ * 2. Iterate through all configured domains
+ * 3. Process each domain independently (failures don't block others)
+ * 4. Report summary at end
+ *
+ * Error handling:
+ * - Graceful degradation: One domain failure doesn't stop others
+ * - Logs all errors for observability
+ * - Exits with code 1 only if USER_EMAIL is missing (critical)
+ */
+async function main() {
+  const startTime = Date.now();
+
+  try {
+    logger.info('🚀 Starting Tech Digest Batch (FreshRSS + Gemini Flash 2.5)');
+    logger.info(`📊 Processing ${DOMAINS.length} domains: ${DOMAINS.map(d => d.label).join(', ')}\n`);
+
+    const userEmail = process.env.USER_EMAIL;
+    if (!userEmail) {
+      throw new Error('USER_EMAIL environment variable not set');
+    }
+
+    // Process each domain sequentially
+    let successCount = 0;
+    for (const domain of DOMAINS) {
+      const success = await processDomain(domain, userEmail);
+      if (success) successCount++;
+    }
+
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
-    logger.info(`\n${'='.repeat(60)}`);
-    logger.info(`✅ Tech Digest completed in ${duration}s`);
     logger.info(`${'='.repeat(60)}`);
+    logger.info(`✅ Batch completed: ${successCount}/${DOMAINS.length} digests sent in ${duration}s`);
+    logger.info(`${'='.repeat(60)}`);
+
+    // Exit with status 1 if no domains succeeded
+    if (successCount === 0) {
+      process.exit(1);
+    }
   } catch (error) {
     logger.error(`❌ Fatal error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     process.exit(1);
