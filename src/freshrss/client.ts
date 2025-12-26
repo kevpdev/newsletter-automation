@@ -21,12 +21,12 @@ const BASE_DELAY_MS = 1000; // Exponential backoff: 1s, 2s, 4s
  * - Normalizes FreshRSS items to standard Article format
  *
  * Time-based filtering:
- * - For weekly runs: daysBack=7 (gets articles from last 7 days)
- * - For monthly runs: daysBack=30 (gets articles from last 30 days)
+ * - Default: daysBack=14 (covers weekly + monthly feeds)
+ * - Configurable per call if needed (7 for weekly, 30 for monthly)
  *
  * @param streamId - FreshRSS stream ID (e.g., "user/-/label/Java")
  * @param count - Maximum articles to fetch from API (default: 50)
- * @param daysBack - Only return articles published in last N days (default: 7)
+ * @param daysBack - Only return articles published in last N days (default: 14)
  * @returns Array of Article objects from the stream, filtered by date
  * @throws Error if FRESHRSS_BASE_URL or FRESHRSS_TOKEN environment variables are missing
  * @throws Error after MAX_RETRIES failed attempts
@@ -39,7 +39,7 @@ const BASE_DELAY_MS = 1000; // Exponential backoff: 1s, 2s, 4s
 export async function fetchArticlesForStream(
   streamId: string,
   count: number = 50,
-  daysBack: number = 7
+  daysBack: number = 14
 ): Promise<Article[]> {
   // Validate environment configuration
   if (!FRESHRSS_BASE_URL) {

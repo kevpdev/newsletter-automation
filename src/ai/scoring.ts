@@ -116,9 +116,14 @@ export async function scoreArticles(
     .filter((result) => result.status === 'fulfilled')
     .map((result) => (result as PromiseFulfilledResult<ScoredArticle>).value);
 
-  const failed = results.filter((result) => result.status === 'rejected').length;
+  // Log detailed errors for failed articles
+  const failedResults = results.filter((result) => result.status === 'rejected');
+  failedResults.forEach((result, index) => {
+    const reason = (result as PromiseRejectedResult).reason;
+    logger.error(`Article ${index + 1} scoring failed: ${reason instanceof Error ? reason.message : String(reason)}`);
+  });
 
-  logger.info(`Scoring complete: ${scored.length} succeeded, ${failed} failed`);
+  logger.info(`Scoring complete: ${scored.length} succeeded, ${failedResults.length} failed`);
 
   return scored;
 }
