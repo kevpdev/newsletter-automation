@@ -39,7 +39,7 @@ const BASE_DELAY_MS = 1000; // Exponential backoff: 1s, 2s, 4s
 export async function fetchArticlesForStream(
   streamId: string,
   count: number = 50,
-  daysBack: number = 14
+  daysBack: number = 7
 ): Promise<Article[]> {
   // Validate environment configuration
   if (!FRESHRSS_BASE_URL) {

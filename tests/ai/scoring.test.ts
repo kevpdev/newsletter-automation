@@ -34,7 +34,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    const result = await scoreArticle(mockArticle, 'java');
+    const result = await scoreArticle(mockArticle, 'Java');
 
     expect(result).toEqual({
       ...mockArticle,
@@ -48,7 +48,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    const result = await scoreArticle(mockArticle, 'java');
+    const result = await scoreArticle(mockArticle, 'Java');
 
     expect(result.score).toBe(9);
     expect(result.reason).toBe('Critical update');
@@ -59,7 +59,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    await expect(scoreArticle(mockArticle, 'java')).rejects.toThrow('Invalid score');
+    await expect(scoreArticle(mockArticle, 'Java')).rejects.toThrow('Invalid score');
   });
 
   it('should throw on score out of range (11)', async () => {
@@ -67,7 +67,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    await expect(scoreArticle(mockArticle, 'java')).rejects.toThrow('Invalid score');
+    await expect(scoreArticle(mockArticle, 'Java')).rejects.toThrow('Invalid score');
   });
 
   it('should throw on missing reason', async () => {
@@ -75,7 +75,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    await expect(scoreArticle(mockArticle, 'java')).rejects.toThrow('reason');
+    await expect(scoreArticle(mockArticle, 'Java')).rejects.toThrow('reason');
   });
 
   it('should handle markdown fences in response', async () => {
@@ -83,7 +83,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    const result = await scoreArticle(mockArticle, 'java');
+    const result = await scoreArticle(mockArticle, 'Java');
 
     expect(result.score).toBe(7);
     expect(result.reason).toBe('Good update');
@@ -94,7 +94,7 @@ describe('scoreArticle', () => {
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
-    const result = await scoreArticle(mockArticle, 'java');
+    const result = await scoreArticle(mockArticle, 'Java');
 
     expect(result.score).toBe(8);
   });
@@ -115,7 +115,7 @@ describe('scoreArticles', () => {
       .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Reason 1' }))
       .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2' }));
 
-    const results = await scoreArticles(articles, 'java');
+    const results = await scoreArticles(articles, 'Java');
 
     expect(results).toHaveLength(2);
     expect(results[0].score).toBe(8);
@@ -132,7 +132,7 @@ describe('scoreArticles', () => {
       .mockRejectedValueOnce(new Error('API error'))
       .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2' }));
 
-    const results = await scoreArticles(articles, 'java');
+    const results = await scoreArticles(articles, 'Java');
 
     expect(results).toHaveLength(1);
     expect(results[0].id).toBe('2');
@@ -150,7 +150,7 @@ describe('scoreArticles', () => {
       .mockRejectedValueOnce(new Error('Failed'))
       .mockResolvedValueOnce(JSON.stringify({ score: 5, reason: 'OK' }));
 
-    const results = await scoreArticles(articles, 'java');
+    const results = await scoreArticles(articles, 'Java');
 
     expect(results).toHaveLength(2);
     expect(results[0].id).toBe('1');

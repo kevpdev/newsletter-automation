@@ -1,5 +1,7 @@
-export const SCORING_PROMPTS: Record<string, string> = {
-  java: `You are a Java tech watch expert. Score this article from 1 to 10 based on:
+import type { DomainConfig } from '../types.js';
+
+export const SCORING_PROMPTS: Record<DomainConfig['label'], string> = {
+  Java: `You are a Java tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** Major JDK releases, breaking changes, critical security patches, paradigm shifts (e.g., Virtual Threads GA, Pattern Matching production-ready)
@@ -21,7 +23,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  vue: `You are a Vue.js tech watch expert. Score this article from 1 to 10 based on:
+  Vue: `You are a Vue.js tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** Vue 3 major releases, Composition API changes, Vite major updates, breaking changes
@@ -37,7 +39,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  angular: `You are an Angular tech watch expert. Score this article from 1 to 10 based on:
+  Angular: `You are an Angular tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** Angular major releases (v17+), standalone components GA, signals, breaking changes
@@ -53,7 +55,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  frontend: `You are a Frontend tech watch expert. Score this article from 1 to 10 based on:
+  Frontend: `You are a Frontend tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** React 19, Web standards (View Transitions API), CSS major updates, browser engine changes
@@ -69,7 +71,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  devops: `You are a DevOps tech watch expert. Score this article from 1 to 10 based on:
+  DevOps: `You are a DevOps tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** Kubernetes major releases, Docker security patches, cloud platform breaking changes
@@ -85,7 +87,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  ai: `You are an AI/ML tech watch expert. Score this article from 1 to 10 based on:
+  AI: `You are an AI/ML tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** GPT-5/Claude 4 releases, major model breakthroughs, regulation changes, paradigm shifts
@@ -101,7 +103,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  architecture: `You are a Software Architecture tech watch expert. Score this article from 1 to 10 based on:
+  Architecture: `You are a Software Architecture tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** Paradigm shifts (serverless evolution, event-driven), major patterns, industry-wide changes
@@ -117,7 +119,7 @@ Source: {{SOURCE}}
 
 Return ONLY the JSON object, no additional text.`,
 
-  security: `You are a Security tech watch expert. Score this article from 1 to 10 based on:
+  Security: `You are a Security tech watch expert. Score this article from 1 to 10 based on:
 
 **Scoring Criteria (1-10 scale):**
 - **9-10 (Critical):** Zero-day vulnerabilities, major CVEs, supply chain attacks, critical patches
@@ -135,7 +137,7 @@ Return ONLY the JSON object, no additional text.`,
 };
 
 export function buildScoringPrompt(
-  domain: string,
+  domain: DomainConfig['label'],
   article: { title: string; summary: string; source?: string }
 ): string {
   const template = SCORING_PROMPTS[domain];

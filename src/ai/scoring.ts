@@ -1,7 +1,7 @@
 import { summarizeWithAI } from './openrouter.js';
 import { buildScoringPrompt } from './scoring-prompts.js';
 import logger from '../logger.js';
-import type { Article } from '../types.js';
+import type { Article, DomainConfig } from '../types.js';
 
 /**
  * AI LLM Model for article scoring
@@ -61,7 +61,7 @@ interface ScoreResponse {
  */
 export async function scoreArticle(
   article: Article,
-  domain: string
+  domain: DomainConfig['label']
 ): Promise<ScoredArticle> {
   const prompt = buildScoringPrompt(domain, article);
 
@@ -103,7 +103,7 @@ export async function scoreArticle(
  */
 export async function scoreArticles(
   articles: Article[],
-  domain: string
+  domain: DomainConfig['label']
 ): Promise<ScoredArticle[]> {
   logger.info(`Scoring ${articles.length} articles for domain: ${domain}`);
 

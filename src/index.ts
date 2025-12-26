@@ -80,7 +80,7 @@ async function processDomain(
 
     // Note: Using Gemini Flash 2.5 (faster, cost-effective)
     logger.info('🤖 Scoring articles with Gemini Flash 2.5...');
-    const scoredArticles = await scoreArticles(articles, domain.label.toLowerCase());
+    const scoredArticles = await scoreArticles(articles, domain.label);
 
     if (scoredArticles.length === 0) {
       logger.warn(`⊘ No articles scored for ${domain.label}, skipping digest`);
@@ -90,6 +90,13 @@ async function processDomain(
     logger.info(`✓ Scored ${scoredArticles.length} articles`);
 
     const digest = aggregateByScore(scoredArticles);
+
+    // Check if digest has any eligible articles (score >= 3)
+    const eligibleCount = digest.critical.length + digest.important.length + digest.bonus.length;
+    if (eligibleCount === 0) {
+      logger.warn(`⊘ No eligible articles for ${domain.label} (all scored < 3), skipping digest`);
+      return false;
+    }
 
     logger.info('🎨 Rendering HTML digest...');
     const htmlBody = renderDigest(digest, domain);
