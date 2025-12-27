@@ -44,7 +44,7 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.post).mockResolvedValue(mockResponse);
 
-    const result = await summarizeWithAI('Test prompt');
+    const result = await summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free');
 
     expect(result).toBe('{"title":"Test","impact":"Test impact","keyPoints":["A","B","C"],"action":"Test"}');
     expect(axios.post).toHaveBeenCalledTimes(1);
@@ -67,7 +67,7 @@ describe('summarizeWithAI', () => {
   it('should throw error when OPENROUTER_API_KEY is not set', async () => {
     delete process.env.OPENROUTER_API_KEY;
 
-    await expect(summarizeWithAI('Test prompt')).rejects.toThrow(
+    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
       'OPENROUTER_API_KEY environment variable is not set'
     );
 
@@ -88,7 +88,7 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.post).mockResolvedValue(mockResponse);
 
-    await expect(summarizeWithAI('Test prompt')).rejects.toThrow(
+    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
       'OpenRouter response missing content'
     );
   });
@@ -131,7 +131,7 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    const result = await summarizeWithAI('Test prompt');
+    const result = await summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free');
 
     expect(result).toBe('{"title":"Success after retry"}');
     expect(axios.post).toHaveBeenCalledTimes(3);
@@ -154,7 +154,7 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(rateLimitError);
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    await expect(summarizeWithAI('Test prompt')).rejects.toThrow('Rate limit exceeded');
+    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow('Rate limit exceeded');
     expect(axios.post).toHaveBeenCalledTimes(3);
   });
 
@@ -176,7 +176,7 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(apiError);
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    await expect(summarizeWithAI('Test prompt')).rejects.toThrow(
+    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
       'OpenRouter API error: Invalid request format'
     );
     expect(axios.post).toHaveBeenCalledTimes(3);
@@ -191,7 +191,7 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(networkError);
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    await expect(summarizeWithAI('Test prompt')).rejects.toThrow(
+    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
       'OpenRouter API error: Network Error'
     );
   });
@@ -202,7 +202,7 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(unexpectedError);
     vi.mocked(axios.isAxiosError).mockReturnValue(false);
 
-    await expect(summarizeWithAI('Test prompt')).rejects.toThrow('Unexpected error');
+    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow('Unexpected error');
   });
 
   it('should include HTTP-Referer and X-Title headers', async () => {
@@ -220,7 +220,7 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.post).mockResolvedValue(mockResponse);
 
-    await summarizeWithAI('Test prompt');
+    await summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free');
 
     expect(axios.post).toHaveBeenCalledWith(
       expect.any(String),
@@ -249,7 +249,7 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.post).mockResolvedValue(mockResponse);
 
-    await summarizeWithAI('Test prompt');
+    await summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free');
 
     expect(axios.post).toHaveBeenCalledWith(
       expect.any(String),
@@ -275,7 +275,7 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.post).mockResolvedValue(mockResponse);
 
-    await summarizeWithAI('Test prompt');
+    await summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free');
 
     expect(axios.post).toHaveBeenCalledWith(
       expect.any(String),
