@@ -10,12 +10,6 @@ export const SCORING_PROMPTS: Record<DomainConfig['label'], string> = {
 - **3-4 (Low Impact):** Opinion pieces, tutorials, niche libraries, incremental improvements
 - **1-2 (Skip):** Duplicate content, outdated news, non-technical fluff
 
-**Output format (JSON only, no markdown):**
-{
-  "score": 8,
-  "reason": "Spring Boot 3.3 introduces major observability improvements with Micrometer Tracing, impacting production monitoring in microservices architectures"
-}
-
 **Article to score:**
 Title: {{TITLE}}
 Summary: {{SUMMARY}}
@@ -138,14 +132,34 @@ Return ONLY the JSON object, no additional text.`,
 
 export function buildScoringPrompt(
   domain: DomainConfig['label'],
-  article: { title: string; summary: string; source?: string }
+  article: { title: string; summary: string; source?: string },
+  locale: string = 'en'
 ): string {
   const template = SCORING_PROMPTS[domain];
   if (!template) {
     throw new Error(`No scoring prompt found for domain: ${domain}`);
   }
 
-  return template
+  const outputFormat = `
+
+**Output format (JSON only, no markdown):**
+{
+  "score": 8,
+  "reason": "Detailed explanation of why this article received this score",
+  "hook": "One-line catchy summary for quick scanning (60-120 chars)"
+}
+
+**Field requirements:**
+- "score": Number 1-10
+- "reason": Detailed explanation (100-200 chars)
+- "hook": Engaging one-liner for TL;DR section (60-120 chars, must be informative and contextual)`;
+
+  const languageInstruction =
+    locale.toLowerCase().startsWith('fr')
+      ? '\n\n**Language instruction:** Write both "reason" and "hook" fields in French.'
+      : '\n\n**Language instruction:** Write both "reason" and "hook" fields in English.';
+
+  return (template + outputFormat + languageInstruction)
     .replace('{{TITLE}}', article.title)
     .replace('{{SUMMARY}}', article.summary.slice(0, 500))
     .replace('{{SOURCE}}', article.source || 'Unknown');

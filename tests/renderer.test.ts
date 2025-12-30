@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderDigest } from '../src/renderer.js';
 import type { Digest } from '../src/aggregator.js';
 import type { ScoredArticle } from '../src/ai/scoring.js';
 import type { DomainConfig } from '../src/types.js';
+
+beforeEach(() => {
+  process.env.LOCALE = 'en';
+});
 
 const javaDomain: DomainConfig = {
   label: 'Java',
@@ -20,6 +24,7 @@ const createMockArticle = (id: string, score: number, title: string): ScoredArti
   source: 'example.com',
   score,
   reason: `Reason for ${title}`,
+  hook: `Quick summary for ${title}`,
 });
 
 describe('renderDigest', () => {
@@ -38,7 +43,7 @@ describe('renderDigest', () => {
       const html = renderDigest(validDigest, javaDomain);
 
       expect(html).toContain('<!DOCTYPE html>');
-      expect(html).toContain('<html lang="fr">');
+      expect(html).toContain('<html lang="en">');
       expect(html).toContain('</html>');
       expect(html).toContain('<head>');
       expect(html).toContain('<body');
@@ -75,6 +80,30 @@ describe('renderDigest', () => {
     it('should display total articles count', () => {
       const html = renderDigest(validDigest, javaDomain);
       expect(html).toContain('4 articles scored and curated');
+    });
+  });
+
+  describe('TL;DR section', () => {
+    it('should display TL;DR heading', () => {
+      const html = renderDigest(validDigest, javaDomain);
+      expect(html).toContain('📋 Top 3 This Week');
+    });
+
+    it('should display top 3 articles in TL;DR', () => {
+      const html = renderDigest(validDigest, javaDomain);
+      expect(html).toContain('<!-- TL;DR Section -->');
+    });
+
+    it('should use domain color for TL;DR border', () => {
+      const html = renderDigest(validDigest, javaDomain);
+      expect(html).toContain('border: 2px solid #FF6B6B');
+    });
+
+    it('should display article hooks in TL;DR', () => {
+      const html = renderDigest(validDigest, javaDomain);
+      expect(html).toContain('Quick summary for Critical Update');
+      expect(html).toContain('Quick summary for Breaking Change');
+      expect(html).toContain('Quick summary for Important Release');
     });
   });
 

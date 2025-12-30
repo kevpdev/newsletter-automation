@@ -1,5 +1,6 @@
 import type { Digest } from './aggregator.js';
 import type { DomainConfig, ScoredArticle } from './types.js';
+import { getTranslations, getLocale } from './i18n.js';
 
 function hexToRgba(hex: string, opacity: number): string {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -22,7 +23,8 @@ function escapeHtml(text: string): string {
 function renderSection(
   heading: string,
   articles: ScoredArticle[],
-  accentColor: string
+  accentColor: string,
+  sourceLabel: string
 ): string {
   if (articles.length === 0) return '';
 
@@ -39,7 +41,7 @@ function renderSection(
       <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.6;">
         ${escapeHtml(article.reason)}
       </p>
-      ${article.source ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #999;">Source: ${escapeHtml(article.source)}</p>` : ''}
+      ${article.source ? `<p style="margin: 8px 0 0 0; font-size: 12px; color: #999;">${sourceLabel}: ${escapeHtml(article.source)}</p>` : ''}
     </li>`
     )
     .join('\n');
@@ -53,17 +55,46 @@ ${articlesHtml}
   </ul>`;
 }
 
-function renderEmptyDigest(domain: DomainConfig): string {
+function renderTldr(
+  articles: ScoredArticle[],
+  heading: string,
+  color: string
+): string {
+  if (articles.length === 0) return '';
+
+  const topThree = articles.slice(0, 3);
+
+  const tldrItems = topThree
+    .map((article) => {
+      return `    <li style="margin: 8px 0; font-size: 15px; line-height: 1.5; color: #333;">
+      • ${escapeHtml(article.hook)}
+    </li>`;
+    })
+    .join('\n');
+
+  return `
+  <!-- TL;DR Section -->
+  <div style="background-color: #fff; border: 2px solid ${color}; border-radius: 8px; padding: 20px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <h2 style="margin: 0 0 15px 0; color: ${color}; font-size: 18px; font-weight: 600;">
+      ${heading}
+    </h2>
+    <ul style="list-style: none; padding: 0; margin: 0;">
+${tldrItems}
+    </ul>
+  </div>`;
+}
+
+function renderEmptyDigest(domain: DomainConfig, t: ReturnType<typeof getTranslations>, locale: string): string {
   return `
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8">
   <title>${domain.label} Tech Digest</title>
 </head>
 <body style="font-family: sans-serif; padding: 40px; text-align: center;">
-  <h1 style="color: #999;">No articles this week</h1>
-  <p style="color: #666;">Check back next week for updates!</p>
+  <h1 style="color: #999;">${t.noArticlesThisWeek}</h1>
+  <p style="color: #666;">${t.checkBackNextWeek}</p>
 </body>
 </html>
 `.trim();
@@ -72,34 +103,42 @@ function renderEmptyDigest(domain: DomainConfig): string {
 export function renderDigest(digest: Digest, domain: DomainConfig): string {
   const { critical, important, bonus } = digest;
   const { label, color } = domain;
+  const locale = getLocale();
+  const t = getTranslations(locale);
 
   const bgColor = hexToRgba(color, 0.2);
 
   if (critical.length === 0 && important.length === 0 && bonus.length === 0) {
-    return renderEmptyDigest(domain);
+    return renderEmptyDigest(domain, t, locale);
   }
 
+  const allArticles = [...critical, ...important, ...bonus].sort((a, b) => b.score - a.score);
+  const tldrSection = renderTldr(allArticles, t.topThisWeek, color);
+
   const criticalSection = renderSection(
-    '🔥 Critical Updates (Must Read)',
+    t.criticalUpdates,
     critical,
-    '#FF6B6B'
+    '#FF6B6B',
+    t.source
   );
 
   const importantSection = renderSection(
-    '📌 Important Updates',
+    t.importantUpdates,
     important,
-    '#3A86FF'
+    '#3A86FF',
+    t.source
   );
 
   const bonusSection = renderSection(
-    '💡 Bonus Reads',
+    t.bonusReads,
     bonus,
-    '#06D6A0'
+    '#06D6A0',
+    t.source
   );
 
   return `
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="${locale}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -110,12 +149,14 @@ export function renderDigest(digest: Digest, domain: DomainConfig): string {
   <!-- Domain Header -->
   <div style="background-color: ${bgColor}; border-left: 8px solid ${color}; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
     <h3 style="margin: 0; color: ${color}; font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-      ${label} Tech Digest
+      ${label} ${t.techDigest}
     </h3>
     <p style="margin: 8px 0 0 0; color: #666; font-size: 14px;">
-      ${digest.total} articles scored and curated
+      ${digest.total} ${t.articlesScored}
     </p>
   </div>
+
+  ${tldrSection}
 
   ${criticalSection}
   ${importantSection}
@@ -124,7 +165,7 @@ export function renderDigest(digest: Digest, domain: DomainConfig): string {
   <!-- Footer -->
   <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #999; font-size: 14px;">
     <p style="margin: 0;">
-      Tech Digest · Powered by FreshRSS + Claude 3.5 Haiku
+      ${t.poweredBy}
     </p>
   </div>
 

@@ -29,6 +29,7 @@ import { scoreArticles } from './ai/scoring.js';
 import { aggregateByScore } from './aggregator.js';
 import { renderDigest } from './renderer.js';
 import { DOMAINS } from './config.js';
+import { getTranslations, getLocale } from './i18n.js';
 import type { OutputEmail } from './types.js';
 
 dotenv.config();
@@ -37,14 +38,14 @@ dotenv.config();
  * Calculates current week number and year.
  * Used for email subject line and logs.
  *
- * @returns String like "Week 3, 2025"
+ * @returns String like "Week 3, 2025" or "Semaine 3, 2025" depending on locale
  */
-function getCurrentWeek(): string {
+function getCurrentWeek(t: ReturnType<typeof getTranslations>): string {
   const now = new Date();
   const startOfYear = new Date(now.getFullYear(), 0, 1);
   const dayOfYear = Math.floor((now.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24));
   const week = Math.ceil((dayOfYear + 1) / 7);
-  return `Week ${week}, ${now.getFullYear()}`;
+  return `${t.week} ${week}, ${now.getFullYear()}`;
 }
 
 /**
@@ -101,9 +102,11 @@ async function processDomain(
     logger.info('🎨 Rendering HTML digest...');
     const htmlBody = renderDigest(digest, domain);
 
+    const locale = getLocale();
+    const t = getTranslations(locale);
     const outputEmail: OutputEmail = {
       to: userEmail,
-      subject: `[${domain.label}] Tech Digest - ${getCurrentWeek()}`,
+      subject: `[${domain.label}] ${t.techDigest} - ${getCurrentWeek(t)}`,
       htmlBody,
       outputLabel: domain.outputLabel,
     };

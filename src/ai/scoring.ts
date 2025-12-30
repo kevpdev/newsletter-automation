@@ -1,6 +1,7 @@
 import { summarizeWithAI } from './openrouter.js';
 import { buildScoringPrompt } from './scoring-prompts.js';
 import logger from '../logger.js';
+import { getLocale } from '../i18n.js';
 import type { Article, DomainConfig } from '../types.js';
 
 /**
@@ -28,6 +29,8 @@ export interface ScoredArticle extends Article {
   score: number;
   /** Brief explanation of why article scored this value */
   reason: string;
+  /** One-line catchy summary for TL;DR section (60-120 chars) */
+  hook: string;
 }
 
 /**
@@ -37,6 +40,7 @@ export interface ScoredArticle extends Article {
 interface ScoreResponse {
   score: number;
   reason: string;
+  hook: string;
 }
 
 /**
@@ -63,7 +67,7 @@ export async function scoreArticle(
   article: Article,
   domain: DomainConfig['label']
 ): Promise<ScoredArticle> {
-  const prompt = buildScoringPrompt(domain, article);
+  const prompt = buildScoringPrompt(domain, article, getLocale());
 
   try {
     const response = await summarizeWithAI(prompt, LLM_MODEL);
@@ -75,6 +79,7 @@ export async function scoreArticle(
       ...article,
       score: scoreData.score,
       reason: scoreData.reason,
+      hook: scoreData.hook,
     };
   } catch (error) {
     logger.error(`Failed to score article: ${article.title}`, {
@@ -159,9 +164,20 @@ function parseScoreResponse(response: string): ScoreResponse {
       throw new Error('Missing or empty reason field');
     }
 
+    // Validate hook is provided
+    if (typeof parsed.hook !== 'string' || parsed.hook.length === 0) {
+      throw new Error('Missing or empty hook field');
+    }
+
+    // Validate hook length (60-120 chars recommended)
+    if (parsed.hook.length < 20 || parsed.hook.length > 150) {
+      throw new Error(`Hook length ${parsed.hook.length} outside recommended range (20-150 chars)`);
+    }
+
     return {
       score: Math.round(parsed.score), // Round to nearest integer
       reason: parsed.reason,
+      hook: parsed.hook,
     };
   } catch (error) {
     logger.error('Failed to parse score response', {

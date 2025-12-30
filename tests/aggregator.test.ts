@@ -11,6 +11,7 @@ const createMockArticle = (id: string, score: number): ScoredArticle => ({
   source: 'example.com',
   score,
   reason: 'Test reason',
+  hook: `Hook for article ${id}`,
 });
 
 describe('aggregateByScore', () => {
