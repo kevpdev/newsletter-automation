@@ -1,4 +1,4 @@
-name: Tech Digest Batch
+name: Newsletter Automation - Weekly
 
 on:
   schedule:
