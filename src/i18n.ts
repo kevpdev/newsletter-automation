@@ -11,6 +11,7 @@ interface Translations {
   poweredBy: string;
   source: string;
   week: string;
+  topThisWeek: string;
 }
 
 const translations: Record<SupportedLocale, Translations> = {
@@ -25,6 +26,7 @@ const translations: Record<SupportedLocale, Translations> = {
     poweredBy: 'Tech Digest · Powered by FreshRSS + Claude 3.5 Haiku',
     source: 'Source',
     week: 'Week',
+    topThisWeek: '📋 Top 3 This Week',
   },
   fr: {
     noArticlesThisWeek: 'Aucun article cette semaine',
@@ -37,6 +39,7 @@ const translations: Record<SupportedLocale, Translations> = {
     poweredBy: 'Digest Tech · Propulsé par FreshRSS + Claude 3.5 Haiku',
     source: 'Source',
     week: 'Semaine',
+    topThisWeek: '📋 Top 3 de la semaine',
   },
 };
 

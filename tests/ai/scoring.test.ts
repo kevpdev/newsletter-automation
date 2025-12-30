@@ -30,6 +30,7 @@ describe('scoreArticle', () => {
     const mockResponse = JSON.stringify({
       score: 8,
       reason: 'Major framework release with observability improvements',
+      hook: 'Spring Boot 3.3 brings major observability features',
     });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
@@ -40,11 +41,12 @@ describe('scoreArticle', () => {
       ...mockArticle,
       score: 8,
       reason: 'Major framework release with observability improvements',
+      hook: 'Spring Boot 3.3 brings major observability features',
     });
   });
 
   it('should parse valid JSON score response', async () => {
-    const mockResponse = JSON.stringify({ score: 9, reason: 'Critical update' });
+    const mockResponse = JSON.stringify({ score: 9, reason: 'Critical update', hook: 'Critical Java update released' });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -55,7 +57,7 @@ describe('scoreArticle', () => {
   });
 
   it('should throw on score out of range (0)', async () => {
-    const mockResponse = JSON.stringify({ score: 0, reason: 'Invalid' });
+    const mockResponse = JSON.stringify({ score: 0, reason: 'Invalid', hook: 'Test hook' });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -63,7 +65,7 @@ describe('scoreArticle', () => {
   });
 
   it('should throw on score out of range (11)', async () => {
-    const mockResponse = JSON.stringify({ score: 11, reason: 'Invalid' });
+    const mockResponse = JSON.stringify({ score: 11, reason: 'Invalid', hook: 'Test hook' });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -71,7 +73,7 @@ describe('scoreArticle', () => {
   });
 
   it('should throw on missing reason', async () => {
-    const mockResponse = JSON.stringify({ score: 8, reason: '' });
+    const mockResponse = JSON.stringify({ score: 8, reason: '', hook: 'Test hook' });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -79,7 +81,7 @@ describe('scoreArticle', () => {
   });
 
   it('should handle markdown fences in response', async () => {
-    const mockResponse = '```json\n{"score": 7, "reason": "Good update"}\n```';
+    const mockResponse = '```json\n{"score": 7, "reason": "Good update", "hook": "Good update hook for testing markdown parsing"}\n```';
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -87,10 +89,11 @@ describe('scoreArticle', () => {
 
     expect(result.score).toBe(7);
     expect(result.reason).toBe('Good update');
+    expect(result.hook).toBe('Good update hook for testing markdown parsing');
   });
 
   it('should round fractional scores', async () => {
-    const mockResponse = JSON.stringify({ score: 7.8, reason: 'Test' });
+    const mockResponse = JSON.stringify({ score: 7.8, reason: 'Test', hook: 'Test hook for rounding' });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -112,8 +115,8 @@ describe('scoreArticles', () => {
     ];
 
     vi.mocked(openrouter.summarizeWithAI)
-      .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Reason 1' }))
-      .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2' }));
+      .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Reason 1', hook: 'Hook for article 1 - test summary' }))
+      .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2', hook: 'Hook for article 2 - test summary' }));
 
     const results = await scoreArticles(articles, 'Java');
 
@@ -130,7 +133,7 @@ describe('scoreArticles', () => {
 
     vi.mocked(openrouter.summarizeWithAI)
       .mockRejectedValueOnce(new Error('API error'))
-      .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2' }));
+      .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2', hook: 'Hook for article 2 - test summary' }));
 
     const results = await scoreArticles(articles, 'Java');
 
@@ -146,9 +149,9 @@ describe('scoreArticles', () => {
     ];
 
     vi.mocked(openrouter.summarizeWithAI)
-      .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Good' }))
+      .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Good', hook: 'Good hook for test article' }))
       .mockRejectedValueOnce(new Error('Failed'))
-      .mockResolvedValueOnce(JSON.stringify({ score: 5, reason: 'OK' }));
+      .mockResolvedValueOnce(JSON.stringify({ score: 5, reason: 'OK', hook: 'OK hook for test article' }));
 
     const results = await scoreArticles(articles, 'Java');
 
