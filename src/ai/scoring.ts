@@ -1,6 +1,7 @@
 import { summarizeWithAI } from './openrouter.js';
 import { buildScoringPrompt } from './scoring-prompts.js';
 import logger from '../logger.js';
+import { getLocale } from '../i18n.js';
 import type { Article, DomainConfig } from '../types.js';
 
 /**
@@ -63,7 +64,7 @@ export async function scoreArticle(
   article: Article,
   domain: DomainConfig['label']
 ): Promise<ScoredArticle> {
-  const prompt = buildScoringPrompt(domain, article);
+  const prompt = buildScoringPrompt(domain, article, getLocale());
 
   try {
     const response = await summarizeWithAI(prompt, LLM_MODEL);

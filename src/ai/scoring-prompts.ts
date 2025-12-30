@@ -138,14 +138,20 @@ Return ONLY the JSON object, no additional text.`,
 
 export function buildScoringPrompt(
   domain: DomainConfig['label'],
-  article: { title: string; summary: string; source?: string }
+  article: { title: string; summary: string; source?: string },
+  locale: string = 'en'
 ): string {
   const template = SCORING_PROMPTS[domain];
   if (!template) {
     throw new Error(`No scoring prompt found for domain: ${domain}`);
   }
 
-  return template
+  const languageInstruction =
+    locale.toLowerCase().startsWith('fr')
+      ? '\n\n**Language instruction:** Write the "reason" field in French.'
+      : '\n\n**Language instruction:** Write the "reason" field in English.';
+
+  return (template + languageInstruction)
     .replace('{{TITLE}}', article.title)
     .replace('{{SUMMARY}}', article.summary.slice(0, 500))
     .replace('{{SOURCE}}', article.source || 'Unknown');

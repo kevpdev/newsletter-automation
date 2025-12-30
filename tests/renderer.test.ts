@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { renderDigest } from '../src/renderer.js';
 import type { Digest } from '../src/aggregator.js';
 import type { ScoredArticle } from '../src/ai/scoring.js';
 import type { DomainConfig } from '../src/types.js';
+
+beforeEach(() => {
+  process.env.LOCALE = 'en';
+});
 
 const javaDomain: DomainConfig = {
   label: 'Java',
@@ -38,7 +42,7 @@ describe('renderDigest', () => {
       const html = renderDigest(validDigest, javaDomain);
 
       expect(html).toContain('<!DOCTYPE html>');
-      expect(html).toContain('<html lang="fr">');
+      expect(html).toContain('<html lang="en">');
       expect(html).toContain('</html>');
       expect(html).toContain('<head>');
       expect(html).toContain('<body');
