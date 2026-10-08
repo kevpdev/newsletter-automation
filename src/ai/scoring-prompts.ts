@@ -154,10 +154,9 @@ export function buildScoringPrompt(
 - "reason": Detailed explanation (100-200 chars)
 - "hook": Engaging one-liner for TL;DR section (60-120 chars, must be informative and contextual)`;
 
-  const languageInstruction =
-    locale.toLowerCase().startsWith('fr')
-      ? '\n\n**Language instruction:** Write both "reason" and "hook" fields in French.'
-      : '\n\n**Language instruction:** Write both "reason" and "hook" fields in English.';
+  const languageInstruction = locale.toLowerCase().startsWith('fr')
+    ? '\n\n**Language instruction:** Write both "reason" and "hook" fields in French.'
+    : '\n\n**Language instruction:** Write both "reason" and "hook" fields in English.';
 
   return (template + outputFormat + languageInstruction)
     .replace('{{TITLE}}', article.title)

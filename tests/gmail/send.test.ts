@@ -75,8 +75,7 @@ describe('sendEmail', () => {
         .replace(/-/g, '+')
         .replace(/_/g, '/')
         .padEnd(
-          sendCall.requestBody.raw.length +
-            ((4 - (sendCall.requestBody.raw.length % 4)) % 4),
+          sendCall.requestBody.raw.length + ((4 - (sendCall.requestBody.raw.length % 4)) % 4),
           '='
         ),
       'base64'
@@ -201,9 +200,7 @@ describe('sendEmail', () => {
 
     mockSend.mockResolvedValue({ data: { id: 'sent-msg-unknown' } });
 
-    await expect(sendEmail(output)).rejects.toThrow(
-      'Label "Output/Unknown" not found'
-    );
+    await expect(sendEmail(output)).rejects.toThrow('Label "Output/Unknown" not found');
 
     expect(mockModify).not.toHaveBeenCalled();
   });

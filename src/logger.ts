@@ -33,10 +33,13 @@ const consoleFormat = winston.format.combine(
     // Remove Winston's internal Symbol properties
     const cleanMetadata = Object.keys(metadata)
       .filter((key) => typeof key === 'string')
-      .reduce((acc, key) => {
-        acc[key] = metadata[key];
-        return acc;
-      }, {} as Record<string, unknown>);
+      .reduce(
+        (acc, key) => {
+          acc[key] = metadata[key];
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
 
     const metaStr = Object.keys(cleanMetadata).length
       ? '\n' + JSON.stringify(cleanMetadata, null, 2)

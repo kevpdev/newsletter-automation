@@ -46,7 +46,11 @@ describe('scoreArticle', () => {
   });
 
   it('should parse valid JSON score response', async () => {
-    const mockResponse = JSON.stringify({ score: 9, reason: 'Critical update', hook: 'Critical Java update released' });
+    const mockResponse = JSON.stringify({
+      score: 9,
+      reason: 'Critical update',
+      hook: 'Critical Java update released',
+    });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -81,7 +85,8 @@ describe('scoreArticle', () => {
   });
 
   it('should handle markdown fences in response', async () => {
-    const mockResponse = '```json\n{"score": 7, "reason": "Good update", "hook": "Good update hook for testing markdown parsing"}\n```';
+    const mockResponse =
+      '```json\n{"score": 7, "reason": "Good update", "hook": "Good update hook for testing markdown parsing"}\n```';
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -93,7 +98,11 @@ describe('scoreArticle', () => {
   });
 
   it('should round fractional scores', async () => {
-    const mockResponse = JSON.stringify({ score: 7.8, reason: 'Test', hook: 'Test hook for rounding' });
+    const mockResponse = JSON.stringify({
+      score: 7.8,
+      reason: 'Test',
+      hook: 'Test hook for rounding',
+    });
 
     vi.mocked(openrouter.summarizeWithAI).mockResolvedValueOnce(mockResponse);
 
@@ -115,8 +124,12 @@ describe('scoreArticles', () => {
     ];
 
     vi.mocked(openrouter.summarizeWithAI)
-      .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Reason 1', hook: 'Hook for article 1 - test summary' }))
-      .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2', hook: 'Hook for article 2 - test summary' }));
+      .mockResolvedValueOnce(
+        JSON.stringify({ score: 8, reason: 'Reason 1', hook: 'Hook for article 1 - test summary' })
+      )
+      .mockResolvedValueOnce(
+        JSON.stringify({ score: 6, reason: 'Reason 2', hook: 'Hook for article 2 - test summary' })
+      );
 
     const results = await scoreArticles(articles, 'Java');
 
@@ -133,7 +146,9 @@ describe('scoreArticles', () => {
 
     vi.mocked(openrouter.summarizeWithAI)
       .mockRejectedValueOnce(new Error('API error'))
-      .mockResolvedValueOnce(JSON.stringify({ score: 6, reason: 'Reason 2', hook: 'Hook for article 2 - test summary' }));
+      .mockResolvedValueOnce(
+        JSON.stringify({ score: 6, reason: 'Reason 2', hook: 'Hook for article 2 - test summary' })
+      );
 
     const results = await scoreArticles(articles, 'Java');
 
@@ -149,9 +164,13 @@ describe('scoreArticles', () => {
     ];
 
     vi.mocked(openrouter.summarizeWithAI)
-      .mockResolvedValueOnce(JSON.stringify({ score: 8, reason: 'Good', hook: 'Good hook for test article' }))
+      .mockResolvedValueOnce(
+        JSON.stringify({ score: 8, reason: 'Good', hook: 'Good hook for test article' })
+      )
       .mockRejectedValueOnce(new Error('Failed'))
-      .mockResolvedValueOnce(JSON.stringify({ score: 5, reason: 'OK', hook: 'OK hook for test article' }));
+      .mockResolvedValueOnce(
+        JSON.stringify({ score: 5, reason: 'OK', hook: 'OK hook for test article' })
+      );
 
     const results = await scoreArticles(articles, 'Java');
 

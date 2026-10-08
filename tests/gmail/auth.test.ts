@@ -38,9 +38,11 @@ vi.mock('googleapis', () => {
 });
 
 describe('getGmailClient', () => {
-  const mockProcessExit = vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined) => {
-    throw new Error(`process.exit(${code})`);
-  });
+  const mockProcessExit = vi
+    .spyOn(process, 'exit')
+    .mockImplementation((code?: string | number | null | undefined) => {
+      throw new Error(`process.exit(${code})`);
+    });
 
   beforeEach(() => {
     vi.clearAllMocks();

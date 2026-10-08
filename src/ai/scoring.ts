@@ -125,7 +125,9 @@ export async function scoreArticles(
   const failedResults = results.filter((result) => result.status === 'rejected');
   failedResults.forEach((result, index) => {
     const reason = (result as PromiseRejectedResult).reason;
-    logger.error(`Article ${index + 1} scoring failed: ${reason instanceof Error ? reason.message : String(reason)}`);
+    logger.error(
+      `Article ${index + 1} scoring failed: ${reason instanceof Error ? reason.message : String(reason)}`
+    );
   });
 
   logger.info(`Scoring complete: ${scored.length} succeeded, ${failedResults.length} failed`);
@@ -149,7 +151,10 @@ export async function scoreArticles(
  */
 function parseScoreResponse(response: string): ScoreResponse {
   // Remove markdown code blocks that LLM sometimes adds
-  const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  const cleaned = response
+    .replace(/```json\n?/g, '')
+    .replace(/```\n?/g, '')
+    .trim();
 
   try {
     const parsed = JSON.parse(cleaned);
@@ -184,6 +189,8 @@ function parseScoreResponse(response: string): ScoreResponse {
       response: cleaned.slice(0, 200),
       error: error instanceof Error ? error.message : String(error),
     });
-    throw new Error(`Score parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Score parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }

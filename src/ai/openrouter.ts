@@ -86,10 +86,7 @@ async function sleep(ms: number): Promise<void> {
  * // Perplexity Sonar (Markdown response)
  * const markdown = await summarizeWithAI(searchQuery, PERPLEXITY_MODEL);
  */
-export async function summarizeWithAI(
-  prompt: string,
-  model: string
-): Promise<string> {
+export async function summarizeWithAI(prompt: string, model: string): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error('OPENROUTER_API_KEY environment variable is not set');
@@ -107,24 +104,18 @@ export async function summarizeWithAI(
   // Retry loop with exponential backoff
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      logger.info(
-        `OpenRouter API call attempt ${attempt + 1}/${MAX_RETRIES} (model: ${model})`
-      );
+      logger.info(`OpenRouter API call attempt ${attempt + 1}/${MAX_RETRIES} (model: ${model})`);
 
       // POST request to OpenRouter with auth headers and timeout
-      const response = await axios.post<OpenRouterResponse>(
-        OPENROUTER_API_URL,
-        requestBody,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://github.com/newsletter-automation',
-            'X-Title': 'Newsletter Automation',
-          },
-          timeout: 30000,
-        }
-      );
+      const response = await axios.post<OpenRouterResponse>(OPENROUTER_API_URL, requestBody, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://github.com/newsletter-automation',
+          'X-Title': 'Newsletter Automation',
+        },
+        timeout: 30000,
+      });
 
       const duration = Date.now() - startTime;
       const content = response.data.choices[0]?.message?.content;
@@ -141,7 +132,7 @@ export async function summarizeWithAI(
         completion_tokens: response.data.usage?.completion_tokens,
         total_tokens: response.data.usage?.total_tokens,
         attempt: attempt + 1,
-        content: content
+        content: content,
       });
 
       return content;
