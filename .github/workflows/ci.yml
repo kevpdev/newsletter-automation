@@ -7,8 +7,8 @@ permissions:
   contents: read
 
 jobs:
-  lint:
-    name: lint
+  lint-test-build:
+    name: lint-test-build
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -21,36 +21,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Format, lint and types (Prettier, ESLint, tsc)
         run: pnpm format:check && pnpm lint && pnpm typecheck
-
-  unit-tests:
-    name: unit-tests
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '20'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
       - name: Unit tests and the coverage threshold (Vitest)
         run: pnpm test:coverage
         env:
           LOCALE: en
-
-  build:
-    name: build
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '20'
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
       - name: Compile to dist/, what the weekly run starts
         run: pnpm build
 
@@ -85,7 +59,7 @@ jobs:
   ci:
     name: ci
     if: always()
-    needs: [lint, unit-tests, build, security]
+    needs: [lint-test-build, security]
     runs-on: ubuntu-24.04
     steps:
       - name: Fail unless every job passed
