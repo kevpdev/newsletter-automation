@@ -22,7 +22,7 @@ export interface Digest {
  * - max: Maximum articles per email (to prevent overwhelming content)
  */
 const DIGEST_LIMITS = {
-  min: 5,  // Minimum articles per email
+  min: 5, // Minimum articles per email
   max: 10, // Maximum articles per email
 };
 
@@ -44,9 +44,7 @@ const DIGEST_LIMITS = {
  */
 export function aggregateByScore(scoredArticles: ScoredArticle[]): Digest {
   // Step 1: Get all critical articles (≥8), sorted by score descending
-  const critical = scoredArticles
-    .filter((a) => a.score >= 8)
-    .sort((a, b) => b.score - a.score);
+  const critical = scoredArticles.filter((a) => a.score >= 8).sort((a, b) => b.score - a.score);
 
   // Step 2: Get all important articles (≥6, <8), sorted by score descending
   const important = scoredArticles
@@ -75,8 +73,8 @@ export function aggregateByScore(scoredArticles: ScoredArticle[]): Digest {
 
   logger.info(
     `📊 Digest breakdown: ${critical.length} critical, ` +
-    `${important.length} important, ${bonus.length} bonus ` +
-    `(total: ${digestSize}/${scoredArticles.length}, min: ${DIGEST_LIMITS.min}, max: ${DIGEST_LIMITS.max})`
+      `${important.length} important, ${bonus.length} bonus ` +
+      `(total: ${digestSize}/${scoredArticles.length}, min: ${DIGEST_LIMITS.min}, max: ${DIGEST_LIMITS.max})`
   );
 
   return {

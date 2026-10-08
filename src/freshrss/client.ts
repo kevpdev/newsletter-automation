@@ -54,7 +54,7 @@ export async function fetchArticlesForStream(
   const startTime = Date.now();
 
   // Calculate cutoff date for filtering articles
-  const cutoffDate = new Date(Date.now() - (daysBack * 24 * 60 * 60 * 1000));
+  const cutoffDate = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000);
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
@@ -75,15 +75,18 @@ export async function fetchArticlesForStream(
 
       // Filter articles by publication date (client-side)
       const allArticles = response.data.items.map(normalizeArticle);
-      const articles = allArticles.filter(article => article.publishedAt >= cutoffDate);
+      const articles = allArticles.filter((article) => article.publishedAt >= cutoffDate);
       const duration = Date.now() - startTime;
 
-      logger.info(`Fetched ${articles.length}/${allArticles.length} articles from FreshRSS (filtered by ${daysBack} days)`, {
-        duration_ms: duration,
-        stream: streamId,
-        attempt: attempt + 1,
-        cutoffDate: cutoffDate.toISOString(),
-      });
+      logger.info(
+        `Fetched ${articles.length}/${allArticles.length} articles from FreshRSS (filtered by ${daysBack} days)`,
+        {
+          duration_ms: duration,
+          stream: streamId,
+          attempt: attempt + 1,
+          cutoffDate: cutoffDate.toISOString(),
+        }
+      );
 
       return articles;
     } catch (error) {

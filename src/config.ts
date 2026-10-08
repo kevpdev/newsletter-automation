@@ -64,7 +64,7 @@ export const DOMAINS: DomainConfig[] = [
 ];
 
 export function getDomainByLabel(label: string): DomainConfig {
-  const domain = DOMAINS.find(d => d.label === label);
+  const domain = DOMAINS.find((d) => d.label === label);
   if (!domain) {
     throw new Error(`Unknown domain: ${label}`);
   }

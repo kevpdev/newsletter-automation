@@ -55,11 +55,7 @@ ${articlesHtml}
   </ul>`;
 }
 
-function renderTldr(
-  articles: ScoredArticle[],
-  heading: string,
-  color: string
-): string {
+function renderTldr(articles: ScoredArticle[], heading: string, color: string): string {
   if (articles.length === 0) return '';
 
   const topThree = articles.slice(0, 3);
@@ -84,7 +80,11 @@ ${tldrItems}
   </div>`;
 }
 
-function renderEmptyDigest(domain: DomainConfig, t: ReturnType<typeof getTranslations>, locale: string): string {
+function renderEmptyDigest(
+  domain: DomainConfig,
+  t: ReturnType<typeof getTranslations>,
+  locale: string
+): string {
   return `
 <!DOCTYPE html>
 <html lang="${locale}">
@@ -115,26 +115,11 @@ export function renderDigest(digest: Digest, domain: DomainConfig): string {
   const allArticles = [...critical, ...important, ...bonus].sort((a, b) => b.score - a.score);
   const tldrSection = renderTldr(allArticles, t.topThisWeek, color);
 
-  const criticalSection = renderSection(
-    t.criticalUpdates,
-    critical,
-    '#FF6B6B',
-    t.source
-  );
+  const criticalSection = renderSection(t.criticalUpdates, critical, '#FF6B6B', t.source);
 
-  const importantSection = renderSection(
-    t.importantUpdates,
-    important,
-    '#3A86FF',
-    t.source
-  );
+  const importantSection = renderSection(t.importantUpdates, important, '#3A86FF', t.source);
 
-  const bonusSection = renderSection(
-    t.bonusReads,
-    bonus,
-    '#06D6A0',
-    t.source
-  );
+  const bonusSection = renderSection(t.bonusReads, bonus, '#06D6A0', t.source);
 
   return `
 <!DOCTYPE html>

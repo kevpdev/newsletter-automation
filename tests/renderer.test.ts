@@ -205,9 +205,7 @@ describe('renderDigest', () => {
   describe('HTML escaping', () => {
     it('should escape HTML in article titles', () => {
       const digest: Digest = {
-        critical: [
-          createMockArticle('1', 9, '<script>alert("XSS")</script>'),
-        ],
+        critical: [createMockArticle('1', 9, '<script>alert("XSS")</script>')],
         important: [],
         bonus: [],
         total: 1,

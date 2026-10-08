@@ -30,7 +30,8 @@ describe('summarizeWithAI', () => {
         choices: [
           {
             message: {
-              content: '{"title":"Test","impact":"Test impact","keyPoints":["A","B","C"],"action":"Test"}',
+              content:
+                '{"title":"Test","impact":"Test impact","keyPoints":["A","B","C"],"action":"Test"}',
             },
           },
         ],
@@ -46,7 +47,9 @@ describe('summarizeWithAI', () => {
 
     const result = await summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free');
 
-    expect(result).toBe('{"title":"Test","impact":"Test impact","keyPoints":["A","B","C"],"action":"Test"}');
+    expect(result).toBe(
+      '{"title":"Test","impact":"Test impact","keyPoints":["A","B","C"],"action":"Test"}'
+    );
     expect(axios.post).toHaveBeenCalledTimes(1);
     expect(axios.post).toHaveBeenCalledWith(
       'https://openrouter.ai/api/v1/chat/completions',
@@ -67,9 +70,9 @@ describe('summarizeWithAI', () => {
   it('should throw error when OPENROUTER_API_KEY is not set', async () => {
     delete process.env.OPENROUTER_API_KEY;
 
-    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
-      'OPENROUTER_API_KEY environment variable is not set'
-    );
+    await expect(
+      summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')
+    ).rejects.toThrow('OPENROUTER_API_KEY environment variable is not set');
 
     expect(axios.post).not.toHaveBeenCalled();
   });
@@ -88,9 +91,9 @@ describe('summarizeWithAI', () => {
 
     vi.mocked(axios.post).mockResolvedValue(mockResponse);
 
-    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
-      'OpenRouter response missing content'
-    );
+    await expect(
+      summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')
+    ).rejects.toThrow('OpenRouter response missing content');
   });
 
   it('should retry on 429 rate limit with exponential backoff', async () => {
@@ -154,7 +157,9 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(rateLimitError);
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow('Rate limit exceeded');
+    await expect(
+      summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')
+    ).rejects.toThrow('Rate limit exceeded');
     expect(axios.post).toHaveBeenCalledTimes(3);
   });
 
@@ -176,9 +181,9 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(apiError);
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
-      'OpenRouter API error: Invalid request format'
-    );
+    await expect(
+      summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')
+    ).rejects.toThrow('OpenRouter API error: Invalid request format');
     expect(axios.post).toHaveBeenCalledTimes(3);
   });
 
@@ -191,9 +196,9 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(networkError);
     vi.mocked(axios.isAxiosError).mockReturnValue(true);
 
-    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow(
-      'OpenRouter API error: Network Error'
-    );
+    await expect(
+      summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')
+    ).rejects.toThrow('OpenRouter API error: Network Error');
   });
 
   it('should handle unexpected errors', async () => {
@@ -202,7 +207,9 @@ describe('summarizeWithAI', () => {
     vi.mocked(axios.post).mockRejectedValue(unexpectedError);
     vi.mocked(axios.isAxiosError).mockReturnValue(false);
 
-    await expect(summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')).rejects.toThrow('Unexpected error');
+    await expect(
+      summarizeWithAI('Test prompt', 'meta-llama/llama-3.3-70b-instruct-free')
+    ).rejects.toThrow('Unexpected error');
   });
 
   it('should include HTTP-Referer and X-Title headers', async () => {

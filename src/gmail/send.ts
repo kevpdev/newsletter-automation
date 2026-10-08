@@ -73,9 +73,7 @@ export async function sendEmail(output: OutputEmail): Promise<void> {
   // Get the output label ID (e.g., "Output/Java")
   const outputLabelId = await getLabelId(output.outputLabel);
   if (!outputLabelId) {
-    throw new Error(
-      `Label "${output.outputLabel}" not found. Please create it in Gmail.`
-    );
+    throw new Error(`Label "${output.outputLabel}" not found. Please create it in Gmail.`);
   }
 
   // Apply output label to sent message

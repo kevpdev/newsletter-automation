@@ -62,10 +62,7 @@ function getCurrentWeek(t: ReturnType<typeof getTranslations>): string {
  * @param userEmail - Target email address
  * @returns true if digest was sent successfully, false if skipped or failed
  */
-async function processDomain(
-  domain: typeof DOMAINS[0],
-  userEmail: string
-): Promise<boolean> {
+async function processDomain(domain: (typeof DOMAINS)[0], userEmail: string): Promise<boolean> {
   try {
     logger.info(`📁 Processing domain: ${domain.label}`);
 
@@ -117,7 +114,9 @@ async function processDomain(
     logger.info(`✅ ${domain.label} digest sent successfully\n`);
     return true;
   } catch (error) {
-    logger.error(`❌ Error processing ${domain.label}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error(
+      `❌ Error processing ${domain.label}: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
     return false;
   }
 }
@@ -141,7 +140,9 @@ async function main() {
 
   try {
     logger.info('🚀 Starting Tech Digest Batch (FreshRSS + Gemini Flash 2.5)');
-    logger.info(`📊 Processing ${DOMAINS.length} domains: ${DOMAINS.map(d => d.label).join(', ')}\n`);
+    logger.info(
+      `📊 Processing ${DOMAINS.length} domains: ${DOMAINS.map((d) => d.label).join(', ')}\n`
+    );
 
     const userEmail = process.env.USER_EMAIL;
     if (!userEmail) {
@@ -157,7 +158,9 @@ async function main() {
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
     logger.info(`${'='.repeat(60)}`);
-    logger.info(`✅ Batch completed: ${successCount}/${DOMAINS.length} digests sent in ${duration}s`);
+    logger.info(
+      `✅ Batch completed: ${successCount}/${DOMAINS.length} digests sent in ${duration}s`
+    );
     logger.info(`${'='.repeat(60)}`);
 
     // Exit with status 1 if no domains succeeded

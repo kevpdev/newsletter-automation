@@ -44,7 +44,9 @@ const translations: Record<SupportedLocale, Translations> = {
 };
 
 export function getTranslations(locale?: string): Translations {
-  const normalizedLocale = (locale?.toLowerCase().startsWith('fr') ? 'fr' : 'en') as SupportedLocale;
+  const normalizedLocale = (
+    locale?.toLowerCase().startsWith('fr') ? 'fr' : 'en'
+  ) as SupportedLocale;
   return translations[normalizedLocale];
 }
 
