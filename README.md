@@ -341,6 +341,9 @@ pnpm run dev
 # Tous les tests
 pnpm test
 
+# Avec la couverture et son seuil, comme la CI
+pnpm test:coverage
+
 # Watch mode
 pnpm run test:watch
 
@@ -374,9 +377,21 @@ Format:
 
 ## 🤖 Automatisation GitHub Actions
 
+### CI des pull requests
+
+**Fichier**: `.github/workflows/ci.yml`, sur chaque pull request vers `main`.
+
+- `lint` : `pnpm format:check`, `pnpm lint`, `pnpm typecheck`
+- `unit-tests` : `pnpm test:coverage` (Vitest, seuil de 58 % de lignes sur tout `src/`)
+- `build` : `pnpm build`
+- `security` : `pnpm audit --audit-level=high` puis Trivy
+- `ci` : la porte, qui échoue si l'un des quatre échoue. C'est le seul check que la branche `main` exige.
+
+Les actions sont épinglées par SHA. Dependabot propose chaque semaine les mises à jour des actions et des paquets npm.
+
 ### Workflow hebdomadaire
 
-**Fichier**: `.github/workflows/run-batch.yml`
+**Fichier**: `.github/workflows/newsletter-weekly.yml`
 
 **Schedule**: Lundi 08:00 UTC (`cron: '0 8 * * 1'`)
 
